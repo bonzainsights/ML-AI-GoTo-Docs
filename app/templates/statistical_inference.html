@@ -4,31 +4,38 @@
 
 <!-- ================= 1. SAMPLING METHODS ================= -->
 <section id="sampling">
-    <h2>1. Sampling Methods</h2>
-    <p>
-        The process of selecting a subset of individuals from a statistical population to estimate characteristics of the whole population.
-    </p>
+  <h2>1. Sampling Methods</h2>
+  <p>
+    The process of selecting a subset of individuals from a statistical
+    population to estimate characteristics of the whole population.
+  </p>
 
-    <div class="card">
-        <h3>Common Methods</h3>
-        <ul>
-            <li>
-                <strong>Simple Random Sampling:</strong> Every member has an equal chance of being selected.
-            </li>
-            <li>
-                <strong>Stratified Sampling:</strong> Population is divided into subgroups (strata) and samples are taken from each.
-            </li>
-        </ul>
-    </div>
+  <div class="card">
+    <h3>Common Methods</h3>
+    <ul>
+      <li>
+        <strong>Simple Random Sampling:</strong> Every member has an equal
+        chance of being selected.
+      </li>
+      <li>
+        <strong>Stratified Sampling:</strong> Population is divided into
+        subgroups (strata) and samples are taken from each.
+      </li>
+    </ul>
+  </div>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        Sampling is fundamental in <strong>Train/Test Splitting</strong>. We use random sampling (or stratified sampling if classes are imbalanced) to ensure our training data represents the real world, preventing bias in our models.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Sampling is fundamental in <strong>Train/Test Splitting</strong>. We use
+    random sampling (or stratified sampling if classes are imbalanced) to ensure
+    our training data represents the real world, preventing bias in our models.
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # Numpy: Simple Random Sampling
+import numpy as np
+
 population = np.arange(1000)
 sample = np.random.choice(population, size=50, replace=False)
 mean_val = np.mean(sample)
@@ -38,24 +45,29 @@ mean_val = np.mean(sample)
 
 <!-- ================= 2. LAW OF LARGE NUMBERS ================= -->
 <section id="lln">
-    <h2>2. Law of Large Numbers (LLN)</h2>
-    <p>
-        As the size of a sample increases, the sample mean gets closer to the expected value (population mean).
-    </p>
+  <h2>2. Law of Large Numbers (LLN)</h2>
+  <p>
+    As the size of a sample increases, the sample mean gets closer to the
+    expected value (population mean).
+  </p>
 
-    <div class="math-block">$$ \lim_{n \to \infty} \bar{X}_n = \mu $$</div>
-    <p class="equation-read-as">
-        "The limit of the sample mean X-bar as n approaches infinity equals the population mean mu."
-    </p>
+  <div class="math-block">$$ \lim_{n \to \infty} \bar{X}_n = \mu $$</div>
+  <p class="equation-read-as">
+    "The limit of the sample mean X-bar as n approaches infinity equals the
+    population mean mu."
+  </p>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        This justifies why we need <strong>large datasets</strong>. The more data we have, the closer our model's learnt parameters (weights) are to the "true" optimal parameters that generalize well.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    This justifies why we need <strong>large datasets</strong>. The more data we
+    have, the closer our model's learnt parameters (weights) are to the "true"
+    optimal parameters that generalize well.
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # Simulation: Coin Flips (True Mean = 0.5)
+import numpy as np
 
 # Small N (n=10)
 small_mean = np.mean(np.random.binomial(n=1, p=0.5, size=10))
@@ -69,20 +81,25 @@ large_mean = np.mean(np.random.binomial(n=1, p=0.5, size=10000))
 
 <!-- ================= 3. CENTRAL LIMIT THEOREM ================= -->
 <section id="clt">
-    <h2>3. Central Limit Theorem (CLT)</h2>
-    <p>
-        The sampling distribution of the sample mean approaches a
-        <strong>Normal Distribution</strong> as the sample size gets larger, regardless of the population's distribution.
-    </p>
+  <h2>3. Central Limit Theorem (CLT)</h2>
+  <p>
+    The sampling distribution of the sample mean approaches a
+    <strong>Normal Distribution</strong> as the sample size gets larger,
+    regardless of the population's distribution.
+  </p>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        CLT allows us to make statistical inferences (compute confidence intervals, p-values) about model performance metrics (like accuracy), assuming they are normally distributed, even if the underlying data isn't.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    CLT allows us to make statistical inferences (compute confidence intervals,
+    p-values) about model performance metrics (like accuracy), assuming they are
+    normally distributed, even if the underlying data isn't.
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # Sampling from Uniform Distribution [0, 100] (Not Normal)
+import numpy as np
+
 # Taking 1000 samples of size 30 and averaging them
 sample_means = [np.mean(np.random.uniform(0, 100, 30)) for _ in range(1000)]
 
@@ -95,31 +112,39 @@ clt_std = np.std(sample_means)
 
 <!-- ================= 4. ESTIMATORS ================= -->
 <section id="estimators">
-    <h2>4. Estimators: Bias, Variance, MLE</h2>
-    <p>
-        An <strong>Estimator</strong> is a rule for calculating an estimate of a given quantity (parameter) based on observed data.
-    </p>
-    <ul>
-        <li>
-            <strong>Bias:</strong> Difference between the estimator's expected value and the true value ($E[\hat{\theta}] - \theta$).
-        </li>
-        <li>
-            <strong>Variance:</strong> How much the estimate fluctuates for different samples.
-        </li>
-        <li>
-            <strong>MLE (Maximum Likelihood Estimation):</strong> A method to find parameters that maximize the probability of obtaining the observed data.
-        </li>
-    </ul>
+  <h2>4. Estimators: Bias, Variance, MLE</h2>
+  <p>
+    An <strong>Estimator</strong> is a rule for calculating an estimate of a
+    given quantity (parameter) based on observed data.
+  </p>
+  <ul>
+    <li>
+      <strong>Bias:</strong> Difference between the estimator's expected value
+      and the true value ($E[\hat{\theta}] - \theta$).
+    </li>
+    <li>
+      <strong>Variance:</strong> How much the estimate fluctuates for different
+      samples.
+    </li>
+    <li>
+      <strong>MLE (Maximum Likelihood Estimation):</strong> A method to find
+      parameters that maximize the probability of obtaining the observed data.
+    </li>
+  </ul>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        <strong>Bias-Variance Tradeoff</strong> is central to supervised learning. MLE is the foundation for training many models, including **Logistic Regression** and **Neural Networks** (where minimizing Cross-Entropy Loss is equivalent to maximizing
-        likelihood).
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    <strong>Bias-Variance Tradeoff</strong> is central to supervised learning.
+    MLE is the foundation for training many models, including **Logistic
+    Regression** and **Neural Networks** (where minimizing Cross-Entropy Loss is
+    equivalent to maximizing likelihood).
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # Scipy: Maximum Likelihood Estimation (MLE)
+from scipy import stats
+
 # Fitting a Normal Distribution to data
 mu_mle, std_mle = stats.norm.fit(sample_data)
 
@@ -130,22 +155,29 @@ mu_mle, std_mle = stats.norm.fit(sample_data)
 
 <!-- ================= 5. CONFIDENCE INTERVALS ================= -->
 <section id="ci">
-    <h2>5. Confidence Intervals</h2>
-    <p>
-        A range of values so defined that there is a specified probability that the value of a parameter lies within it.
-    </p>
+  <h2>5. Confidence Intervals</h2>
+  <p>
+    A range of values so defined that there is a specified probability that the
+    value of a parameter lies within it.
+  </p>
 
-    <div class="math-block">$$ \bar{x} \pm z \frac{\sigma}{\sqrt{n}} $$</div>
+  <div class="math-block">$$ \bar{x} \pm z \frac{\sigma}{\sqrt{n}} $$</div>
+  <p class="equation-read-as">
+    "x-bar plus or minus z times (sigma divided by the square root of n)."
+  </p>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        Reporting a single accuracy number (e.g., "90%") is often misleading. Providing a confidence interval (e.g., "90% ± 2%") gives insight into the
-        <strong>reliability and stability</strong> of the model.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Reporting a single accuracy number (e.g., "90%") is often misleading.
+    Providing a confidence interval (e.g., "90% ± 2%") gives insight into the
+    <strong>reliability and stability</strong> of the model.
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # Scipy: 95% Confidence Interval for the Mean
+from scipy import stats
+
 ci_low, ci_high = stats.norm.interval(0.95, loc=mean, scale=sem)
 
 # 95% CI: [{{ res['ci']['low'] }}, {{ res['ci']['high'] }}]
@@ -154,28 +186,33 @@ ci_low, ci_high = stats.norm.interval(0.95, loc=mean, scale=sem)
 
 <!-- ================= 6. HYPOTHESIS TESTING ================= -->
 <section id="hypothesis-testing">
-    <h2>6. Hypothesis Testing</h2>
-    <p>
-        A procedure to decide whether to reject a null hypothesis ($H_0$) in favor of an alternative hypothesis ($H_1$).
-    </p>
+  <h2>6. Hypothesis Testing</h2>
+  <p>
+    A procedure to decide whether to reject a null hypothesis ($H_0$) in favor
+    of an alternative hypothesis ($H_1$).
+  </p>
 
-    <div class="card">
-        <h3>Common Tests</h3>
-        <ul>
-            <li><strong>Z-test:</strong> For large samples or known variance.</li>
-            <li><strong>t-test:</strong> For small samples with unknown variance.</li>
-            <li><strong>Chi-square test:</strong> For categorical data usage.</li>
-        </ul>
-    </div>
+  <div class="card">
+    <h3>Common Tests</h3>
+    <ul>
+      <li><strong>Z-test:</strong> For large samples or known variance.</li>
+      <li><strong>t-test:</strong> For small samples with unknown variance.</li>
+      <li><strong>Chi-square test:</strong> For categorical data usage.</li>
+    </ul>
+  </div>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        Used for <strong>A/B Testing</strong> to determine if a new model version is statistically significantly better than the old one. Also used in **Feature Selection** (Chi-square test) to select relevant features.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Used for <strong>A/B Testing</strong> to determine if a new model version is
+    statistically significantly better than the old one. Also used in **Feature
+    Selection** (Chi-square test) to select relevant features.
+  </p>
 
-    <h3>Code Implementation</h3>
-    <pre><code class="language-python">
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
 # A. One-Sample t-test (Checking if sample mean differs from 5.0)
+from scipy import stats
+
 t_stat, p_val = stats.ttest_1samp(sample_data, 5.0)
 # t-stat: {{ res['tests']['t_stat'] }} | p-value: {{ res['tests']['t_p'] }}
 
@@ -188,24 +225,56 @@ chi2_stat, p_val = stats.chisquare(f_obs=observed, f_exp=expected)
 
 <!-- ================= 7. P-VALUES & SIGNIFICANCE ================= -->
 <section id="p-values">
-    <h2>7. p-values & Significance</h2>
-    <p>
-        The <strong>p-value</strong> is the probability of obtaining test results at least as extreme as the results observed, assuming the null hypothesis is true.
-    </p>
-    <ul>
-        <li>
-            <strong>$p < 0.05$:</strong> Reject $H_0$ (Statistically Significant).
-        </li>
-        <li>
-            <strong>$p \ge 0.05$:</strong> Fail to reject $H_0$ (Not Significant).
-        </li>
-    </ul>
+  <h2>7. p-values & Significance</h2>
+  <p>
+    The <strong>p-value</strong> is the probability of obtaining test results at
+    least as extreme as the results observed, assuming the null hypothesis is
+    true.
+  </p>
+  <ul>
+    <li>
+      <strong>$p < 0.05$:</strong> Reject $H_0$ (Statistically Significant).
+    </li>
+    <li>
+      <strong>$p \ge 0.05$:</strong> Fail to reject $H_0$ (Not Significant).
+    </li>
+  </ul>
 
-    <h3>Why is this used in ML?</h3>
-    <p>
-        p-values help us avoid p-hacking and overfitting. In regression analysis (e.g., OLS results in `statsmodels`), we look at the p-values of coefficients to determine if a feature has a
-        <strong>significant impact</strong> on the target variable.
-    </p>
+  <h3>Why is this used in ML?</h3>
+  <p>
+    p-values help us avoid p-hacking and overfitting. In regression analysis
+    (e.g., OLS results in `statsmodels`), we look at the p-values of
+    coefficients to determine if a feature has a
+    <strong>significant impact</strong> on the target variable.
+  </p>
 </section>
 
-{% endblock %}
+<!-- ================= 8. REFERENCES ================= -->
+<section id="references">
+  <h2>8. References & Further Reading</h2>
+  <ul>
+    <li>
+      <a
+        href="https://en.wikipedia.org/wiki/Statistical_inference"
+        target="_blank"
+        >Statistical Inference - Wikipedia</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://www.khanacademy.org/math/statistics-probability/significance-tests-one-sample"
+        target="_blank"
+        >Khan Academy: Significance Tests (Hypothesis Testing)</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/cross_validation.html"
+        target="_blank"
+        >Scikit-Learn: Cross-validation (Sampling)</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %} ```
