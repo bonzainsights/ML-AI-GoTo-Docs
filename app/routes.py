@@ -102,7 +102,11 @@ def index():
 
 @main.route('/favicon.ico')
 def favicon():
-    return "", 204
+    return current_app.send_static_file('favicon.ico')
+
+@main.route('/.well-known/appspecific/com.chrome.devtools.json')
+def chrome_devtools():
+    return jsonify({}), 200
 
 @main.route('/intro')
 def ai_intro():
@@ -459,3 +463,5 @@ def statistical_inference():
     }
     
     return render_template('statistical_inference.html', res=results)
+
+
