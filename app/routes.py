@@ -24,6 +24,7 @@ def get_or_build_index():
         'statistics.html': ('main.statistics_page', 'Statistics'),
         'probability_basics.html': ('main.probability_basics', 'Probability Basics'),
         'probability_distributions.html': ('main.probability_distributions', 'Probability Distributions'),
+        'statistical_inference.html': ('main.statistical_inference', 'Statistical Inference'),
         'how_to_contribute.html': ('main.contribute', 'Contribution Guide')
     }
     
@@ -48,6 +49,7 @@ def get_or_build_index():
         if filename == 'ai_intro.html': base_url = '/intro'
         if filename == 'probability_basics.html': base_url = '/probability-basics'
         if filename == 'probability_distributions.html': base_url = '/probability-distributions'
+        if filename == 'statistical_inference.html': base_url = '/statistical-inference'
         if filename == 'how_to_contribute.html': base_url = '/contribute'
 
         index.append({
@@ -390,3 +392,70 @@ def probability_distributions():
 @main.route('/contribute')
 def contribute():
     return render_template('how_to_contribute.html')
+
+@main.route('/statistical-inference')
+def statistical_inference():
+    # --- 1. Sampling Methods ---
+    # Population of 1000 items
+    population = np.arange(1000)
+    # Simple Random Sampling (n=50)
+    simple_sample = np.random.choice(population, size=50, replace=False)
+    simple_sample_mean = np.mean(simple_sample)
+    
+    # --- 2. Law of Large Numbers (LLN) ---
+    # Simulate coin flips (0=Tails, 1=Heads). True mean = 0.5
+    # Small N
+    small_n = 10
+    small_flips = np.random.binomial(n=1, p=0.5, size=small_n)
+    small_mean = np.mean(small_flips)
+    # Large N
+    large_n = 10000
+    large_flips = np.random.binomial(n=1, p=0.5, size=large_n)
+    large_mean = np.mean(large_flips)
+    
+    # --- 3. Central Limit Theorem (CLT) ---
+    # Population: Uniform [0, 100]. Mean = 50.
+    # Take 1000 samples of size 30, calc means.
+    sample_means = [np.mean(np.random.uniform(0, 100, 30)) for _ in range(1000)]
+    clt_mean = np.mean(sample_means)
+    clt_std = np.std(sample_means) # Should be close to (100-0)/sqrt(12) / sqrt(30) ≈ 28.8 / 5.47 ≈ 5.26
+    
+    # --- 4. Estimators ---
+    # Bias & Variance Demonstration is theoretical in text, but let's show MLE fit.
+    # Data from Normal(5, 2)
+    sample_data = np.random.normal(loc=5, scale=2, size=100)
+    # MLE estimation of parameters
+    mu_mle, std_mle = stats.norm.fit(sample_data)
+    
+    # --- 5. Confidence Intervals ---
+    # 95% CI for the mean of sample_data
+    # stats.sem = standard error of mean = std / sqrt(n)
+    ci_low, ci_high = stats.norm.interval(0.95, loc=np.mean(sample_data), scale=stats.sem(sample_data))
+    
+    # --- 6. Hypothesis Testing ---
+    # A. One-sample t-test
+    # H0: Mean = 5.0 vs H1: Mean != 5.0
+    t_stat, t_p_val = stats.ttest_1samp(sample_data, 5.0)
+    
+    # B. Chi-square Goodness of Fit
+    # Observed counts of rolling a die 60 times
+    observed = np.array([12, 8, 11, 9, 13, 7])
+    # Expected counts (fair die) = 10 each
+    expected = np.array([10, 10, 10, 10, 10, 10])
+    chi2_stat, chi2_p_val = stats.chisquare(f_obs=observed, f_exp=expected)
+    
+    results = {
+        'sampling': {'mean': round(simple_sample_mean, 2)},
+        'lln': {'small_mean': small_mean, 'large_mean': round(large_mean, 4)},
+        'clt': {'mean': round(clt_mean, 2), 'std': round(clt_std, 2)},
+        'estimators': {'mu_mle': round(mu_mle, 2), 'std_mle': round(std_mle, 2)},
+        'ci': {'low': round(ci_low, 2), 'high': round(ci_high, 2)},
+        'tests': {
+            't_stat': round(t_stat, 2), 
+            't_p': round(t_p_val, 4),
+            'chi2_stat': round(chi2_stat, 2),
+            'chi2_p': round(chi2_p_val, 4)
+        }
+    }
+    
+    return render_template('statistical_inference.html', res=results)
