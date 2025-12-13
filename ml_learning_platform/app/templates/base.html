@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ML/AI goto Docs</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-theme" />
+
+    <!-- MathJax for LaTeX Equations -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ["$", "$"],
+                    ["\\(", "\\)"],
+                ],
+            },
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+    <!-- Theme Script (to avoid FOUC) -->
+    <script>
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    </script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="mobile-header">
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Menu">
+          <span class="hamburger-icon">☰</span>
+        </button>
+            <a href="{{ url_for('main.index') }}" class="mobile-logo">ML/AI goto Docs</a
+        >
+      </div>
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <a href="{{ url_for('main.index') }}" class="logo">ML/AI goto Docs</a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-wrapper">
+            <input type="text" id="docs-search" placeholder="Search docs..." aria-label="Search documentation" />
+            <div id="search-results" class="search-results-dropdown"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <p class="nav-label">Getting Started</p>
+            <ul>
+                <li><a href="{{ url_for('main.index') }}">Welcome</a></li>
+            </ul>
+
+            <p class="nav-label">Core Concepts</p>
+            <ul>
+                <li><a href="{{ url_for('main.ai_intro') }}">AI & ML Intro</a></li>
+            </ul>
+
+            <p class="nav-label">Mathematics</p>
+            <ul>
+                <li>
+                    <div style="
+                  padding: 0.5rem 0.75rem;
+                  color: var(--text-secondary);
+                  font-weight: 600;
+                  font-size: 0.95rem;
+                ">
+                        Statistics & Probability
+                    </div>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('main.statistics_page') }}">Descriptive Statistics (Foundations)</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.probability_basics') }}"
+                    >Probability Basics</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.probability_distributions') }}"
+                    >Probability Distributions</a
+                  >
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p class="nav-label">Development</p>
+          <ul>
+            <li>
+              <a href="{{ url_for('main.contribute') }}">Contribution Guide</a>
+                        </li>
+                    </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="theme-btn" aria-label="Toggle Dark Mode">
+            <span class="icon-sun">☀</span>
+            <span class="icon-moon">☾</span>
+          </button>
+        </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-wrapper">{% block content %}{% endblock %}</div>
+            <footer>
+                <p>&copy; 2025 ML/AI goto Docs. Documentation built with Flask.</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Highlight.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        hljs.highlightAll();
+    </script>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        const toggleBtn = document.getElementById("theme-toggle");
+        const sidebarToggleBtn = document.getElementById("sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const hljsThemeLink = document.getElementById("hljs-theme");
+
+        function updateHighlightJsTheme(theme) {
+            if (theme === "dark") {
+                hljsThemeLink.href =
+                    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css";
+            } else {
+                hljsThemeLink.href =
+                    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css";
+            }
+        }
+
+        // Set initial Highlight.js theme
+        updateHighlightJsTheme(
+            document.documentElement.getAttribute("data-theme")
+        );
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener("click", () => {
+                const currentTheme =
+                    document.documentElement.getAttribute("data-theme");
+                const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+                document.documentElement.setAttribute("data-theme", newTheme);
+                localStorage.setItem("theme", newTheme);
+                updateHighlightJsTheme(newTheme);
+            });
+        }
+
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener("click", () => {
+                sidebar.classList.toggle("active");
+            });
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener("click", (e) => {
+            if (window.innerWidth <= 768) {
+                if (
+                    sidebar &&
+                    sidebarToggleBtn &&
+                    !sidebar.contains(e.target) &&
+                    !sidebarToggleBtn.contains(e.target) &&
+                    sidebar.classList.contains("active")
+                ) {
+                    sidebar.classList.remove("active");
+                }
+            }
+        });
+
+        // Search Logic (Server-Side)
+        const searchInput = document.getElementById("docs-search");
+        const resultsContainer = document.getElementById("search-results");
+        let debounceTimer;
+
+        async function handleSearch(e) {
+            const query = e.target.value.trim();
+
+            // Clear results if empty
+            if (query.length === 0) {
+                resultsContainer.style.display = "none";
+                resultsContainer.innerHTML = "";
+                return;
+            }
+
+            // Debounce
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async() => {
+                try {
+                    const response = await fetch(
+                        `/api/search?q=${encodeURIComponent(query)}`
+                    );
+                    const results = await response.json();
+                    displayResults(results);
+                } catch (error) {
+                    console.error("Search failed:", error);
+                }
+            }, 300); // 300ms delay
+        }
+
+        function displayResults(results) {
+            resultsContainer.innerHTML = "";
+
+            if (results.length === 0) {
+                const noResult = document.createElement("div");
+                noResult.className = "search-result-item";
+                noResult.textContent = "No results found.";
+                resultsContainer.appendChild(noResult);
+            } else {
+                results.forEach((item) => {
+                    const div = document.createElement("div");
+                    div.className = "search-result-item";
+                    div.innerHTML = `
+                        <div class="result-title">${item.title}</div>
+                        <div class="result-path">${item.category}</div>
+                    `;
+                    div.addEventListener("click", () => {
+                        window.location.href = item.url;
+                        resultsContainer.style.display = "none";
+                        searchInput.value = "";
+                        // Close sidebar on mobile if open
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove("active");
+                        }
+                    });
+                    resultsContainer.appendChild(div);
+                });
+            }
+
+            resultsContainer.style.display = "block";
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener("input", handleSearch);
+            // Hide results when clicking outside
+            document.addEventListener("click", (e) => {
+                if (!searchInput.contains(e.target) &&
+                    !resultsContainer.contains(e.target)
+                ) {
+                    resultsContainer.style.display = "none";
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
