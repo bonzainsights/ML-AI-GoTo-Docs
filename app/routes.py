@@ -463,3 +463,5 @@ def statistical_inference():
     }
     
     return render_template('statistical_inference.html', res=results)
+
+
