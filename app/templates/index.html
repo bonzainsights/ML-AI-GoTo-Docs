@@ -1,23 +1,27 @@
 {% extends "base.html" %} {% block content %}
 <section class="docs-intro">
-    <h1>Welcome to ML/AI goto Docs</h1>
-    <p class="subtitle">
-        Your comprehensive guide to mastering Artificial Intelligence and Machine Learning.
+  <h1>Welcome to BonzaInsight's ML/AI goto Docs</h1>
+  <p class="subtitle">
+    Your comprehensive guide to mastering Artificial Intelligence and Machine
+    Learning.
+  </p>
+
+  <div class="card">
+    <h3>What is NeuroLink?</h3>
+    <p>
+      ML/AI goto Docs is a documentation-style learning platform designed to
+      take you from the basics of AI/ML to advanced statistical concepts. This
+      documentation covers theory, implementation, and best practices.
     </p>
+  </div>
 
-    <div class="card">
-        <h3>What is NeuroLink?</h3>
-        <p>
-            ML/AI goto Docs is a documentation-style learning platform designed to take you from the basics of AI/ML to advanced statistical concepts. This documentation covers theory, implementation, and best practices.
-        </p>
-    </div>
+  <h2>Getting Started</h2>
+  <p>Select a topic from the sidebar to begin your journey.</p>
 
-    <h2>Getting Started</h2>
-    <p>Select a topic from the sidebar to begin your journey.</p>
-
-    <ul>
-        <li>
-            <a href="{{ url_for('main.ai_intro') }}"><strong>AI & ML Introduction</strong></a
+  <ul>
+    <li>
+      <a href="{{ url_for('main.ai_intro') }}"
+        ><strong>AI & ML Introduction</strong></a
       >: Understand the core definitions and types of learning.
     </li>
     <li>
