@@ -1,0 +1,310 @@
+{% extends "base.html" %} {% block content %}
+<h1>Probability Distributions</h1>
+<p class="subtitle">
+    Common discrete and continuous distributions used in Machine Learning.
+</p>
+
+<!-- ================= DISCRETE DISTRIBUTIONS ================= -->
+<section id="discrete-distributions">
+    <h2>1. Discrete Distributions</h2>
+    <p>
+        Distributions where the random variable typically takes on integer values.
+    </p>
+
+    <!-- Bernoulli -->
+    <article id="bernoulli" class="distribution-block">
+        <h3>1.1 Bernoulli Distribution</h3>
+        <p>
+            Models a single experiment with two possible outcomes (Success/Failure) with probability $p$ and $1-p$.
+        </p>
+        <div class="math-block">
+            $$ P(X=k) = p^k (1-p)^{1-k} \quad \text{for } k \in \{0, 1\} $$
+        </div>
+        <p class="equation-read-as">
+            "Probability of X equals k is p to the power of k times (1 minus p) to the power of (1 minus k), where k is 0 or 1."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            Think of <strong>Binary Classification</strong> problems, like determining if an email is "Spam" or "Not Spam". The model tries to predict the probability $p$ that an input belongs to the positive class (1). Every single prediction is essentially
+            modeling a Bernoulli trial: a weighted coin flip where the model outputs the 'weight' (probability).
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: p=0.6
+# PMF at k=1 (Success)
+prob_success = stats.bernoulli.pmf(1, p=0.6)
+# Result: {{ discrete.bernoulli }}
+        </code></pre>
+    </article>
+
+    <!-- Binomial -->
+    <article id="binomial" class="distribution-block">
+        <h3>1.2 Binomial Distribution</h3>
+        <p>Models the number of successes in $n$ independent Bernoulli trials.</p>
+        <div class="math-block">$$ P(X=k) = \binom{n}{k} p^k (1-p)^{n-k} $$</div>
+        <p class="equation-read-as">
+            "Probability of X equals k is 'n choose k' times p to the power of k times (1 minus p) to the power of (n minus k)."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            In <strong>A/B Testing</strong>, we show Version A to $n$ users and count how many click (successes). The Binomial distribution allows us to calculate if the number of clicks is statistically significant or just due to chance, helping us decide
+            which website version is truly better.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: n=10 trials, p=0.5 (Fair coin)
+# Probability of exactly 5 heads
+prob_5_heads = stats.binom.pmf(5, n=10, p=0.5)
+# Result: {{ discrete.binomial }}
+        </code></pre>
+    </article>
+
+    <!-- Geometric -->
+    <article id="geometric" class="distribution-block">
+        <h3>1.3 Geometric Distribution</h3>
+        <p>Models the number of trials needed to get the first success.</p>
+        <div class="math-block">$$ P(X=k) = (1-p)^{k-1}p $$</div>
+        <p class="equation-read-as">
+            "Probability of X equals k is (1 minus p) to the power of (k minus 1) times p."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            Used in <strong>User Behavior Analysis</strong>. For example, "How many ads does a user need to see before they finally click one?". Understanding this helps in estimating marketing costs and Customer Acquisition Cost (CAC) by modeling the
+            "distance" to a conversion.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: p=0.2
+# Prob of success on exactly the 3rd trial
+prob_3rd_try = stats.geom.pmf(3, p=0.2)
+# Result: {{ discrete.geometric }}
+        </code></pre>
+    </article>
+
+    <!-- Poisson -->
+    <article id="poisson" class="distribution-block">
+        <h3>1.4 Poisson Distribution</h3>
+        <p>
+            Models the number of events occurring in a fixed interval of time or space.
+        </p>
+        <div class="math-block">
+            $$ P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!} $$
+        </div>
+        <p class="equation-read-as">
+            "Probability of X equals k is lambda to the power of k times e to the power of negative lambda, divided by k factorial."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            Critical for <strong>Anomaly Detection</strong>. If a server typically receives 5 requests/minute (Average rate $\lambda=5$), we can calculate the probability of seeing 100 requests. If that probability is infinitesimally small, the system
+            flags it as an anomaly (e.g., a DDoS attack), because it falls far outside the expected Poisson distribution behavior.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: lambda=3 (avg events per interval)
+# Prob of exactly 5 events
+prob_5_events = stats.poisson.pmf(5, mu=3)
+# Result: {{ discrete.poisson }}
+        </code></pre>
+    </article>
+</section>
+
+<!-- ================= CONTINUOUS DISTRIBUTIONS ================= -->
+<section id="continuous-distributions">
+    <h2>2. Continuous Distributions</h2>
+    <p>
+        Distributions where the random variable can take any value within a range.
+    </p>
+
+    <!-- Uniform -->
+    <article id="uniform" class="distribution-block">
+        <h3>2.1 Uniform Distribution</h3>
+        <p>All outcomes in the range $[a, b]$ are equally likely.</p>
+        <div class="math-block">
+            $$ f(x) = \frac{1}{b-a} \quad \text{for } a \le x \le b $$
+        </div>
+        <p class="equation-read-as">
+            "The probability density f of x is 1 divided by (b minus a), for x between a and b."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            <strong>Weight Initialization</strong>: When training a Neural Network, we can't start with all weights at zero (the model won't learn). We pick random small numbers from a Uniform distribution. This ensures fairness—every neuron gets a random
+            starting point within the same range, breaking symmetry without favoring any specific direction.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: a=0, b=10
+# PDF at x=5
+pdf_at_5 = stats.uniform.pdf(5, loc=0, scale=10) # scale = b-a
+# Result: {{ continuous.uniform }}
+        </code></pre>
+    </article>
+
+    <!-- Normal (Gaussian) -->
+    <article id="normal" class="distribution-block">
+        <h3>2.2 Normal (Gaussian) Distribution</h3>
+        <p>
+            The bell curve. Symmetric, defined by mean $\mu$ and std dev $\sigma$.
+        </p>
+        <div class="math-block">
+            $$ f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2} $$
+        </div>
+        <p class="equation-read-as">
+            "The probability density f of x is one over sigma times root 2 pi, times e raised to negative one-half times quantity (x minus mu over sigma) squared."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            The <strong>Gaussian Assumption</strong> is everywhere. In Linear Regression, we assume the <em>errors</em> (residuals) follow a Normal distribution. This means we expect most predictions to be slightly off by a small amount (near the peak),
+            and very few predictions to be massively wrong (the tails). Standardizing data (Z-score) forces features into this shape so algorithms converge faster.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: mean=0, std=1 (Standard Normal)
+# PDF at x=0 (Peak)
+pdf_at_peak = stats.norm.pdf(0, loc=0, scale=1)
+# Result: {{ continuous.normal }}
+        </code></pre>
+    </article>
+
+    <!-- Exponential -->
+    <article id="exponential" class="distribution-block">
+        <h3>2.3 Exponential Distribution</h3>
+        <p>Models the time between events in a Poisson process.</p>
+        <div class="math-block">
+            $$ f(x) = \lambda e^{-\lambda x} \quad \text{for } x \ge 0 $$
+        </div>
+        <p class="equation-read-as">
+            "The probability density f of x is lambda times e to the negative lambda x."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            <strong>Survival Analysis & Churn Prediction</strong>. We model "Time to Failure" or "Time to Churn". Instead of just predicting <em>if</em> a customer will leave, specific models use the Exponential distribution to predict <em>when</em> they
+            might leave. This "decay" curve is perfect for modeling events that become more likely as time passes, or constant hazard rates.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: scale=1/lambda. If lambda=0.5, scale=2.
+# PDF at x=2
+pdf_time = stats.expon.pdf(2, scale=2)
+# Result: {{ continuous.exponential }}
+        </code></pre>
+    </article>
+
+    <!-- Gamma -->
+    <article id="gamma" class="distribution-block">
+        <h3>2.4 Gamma Distribution</h3>
+        <p>
+            Generalization of the Exponential distribution. Models wait times for $k$ events.
+        </p>
+        <div class="math-block">$$ f(x) \propto x^{k-1}e^{-x/\theta} $$</div>
+        <p class="equation-read-as">
+            "The probability density f of x is proportional to x to the (k minus 1) times e to the negative x over theta."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            Used in <strong>Process Optimization</strong>. While Exponential models the wait for <em>one</em> event, Gamma models the wait time for $k$ events to happen sequentially. In Bayesian ML, it's used as a "conjugate prior" for the precision of
+            a Normal distribution—essentially helping us estimate how "uncertain" or "noisy" our data is.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: a=2 (shape, k), scale=2 (theta)
+pdf_val = stats.gamma.pdf(3, a=2, scale=2)
+# Result: {{ continuous.gamma }}
+        </code></pre>
+    </article>
+
+    <!-- Beta -->
+    <article id="beta" class="distribution-block">
+        <h3>2.5 Beta Distribution</h3>
+        <p>
+            Defined on $[0, 1]$. Used for modeling probabilities of probabilities.
+        </p>
+        <div class="math-block">$$ f(x) \propto x^{\alpha-1}(1-x)^{\beta-1} $$</div>
+        <p class="equation-read-as">
+            "The probability density f of x is proportional to x to the (alpha minus 1) times (1 minus x) to the (beta minus 1)."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            <strong>Reinforcement Learning (Thompson Sampling)</strong>. Imagine a slot machine (Multi-Armed Bandit). You want to know the probability of winning ($p$). We use a Beta distribution to represent our "belief" about $p$. Initially, it's flat
+            (we know nothing). As we play and win/lose, we update the Beta shape. It peaks around the true winning rate. It's the standard way to model "Probability of a Probability".
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: alpha=2, beta=2 (Symmetric bell-like on [0,1])
+# PDF at x=0.5
+pdf_mid = stats.beta.pdf(0.5, a=2, b=2)
+# Result: {{ continuous.beta }}
+        </code></pre>
+    </article>
+
+    <!-- Chi-square -->
+    <article id="chi-square" class="distribution-block">
+        <h3>2.6 Chi-square ($\chi^2$) Distribution</h3>
+        <p>Sum of squared standard normal variables.</p>
+        <div class="math-block">$$ Q = \sum_{i=1}^{k} Z_i^2 \sim \chi^2_k $$</div>
+        <p class="equation-read-as">
+            "Q is the sum of k squared standard normal variables Z-sub-i, which follows a Chi-square distribution with k degrees of freedom."
+        </p>
+        <h4>Why is this used in ML?</h4>
+        <p>
+            <strong>Feature Selection</strong>. We use the Chi-square test to check independence between categories. For example, is "Color" related to "Sales"? We compare the <em>Actual</em> counts of Red/Blue items sold vs the <em>Expected</em> counts
+            if there was no relationship. A high Chi-square score means they are related, so "Color" is a useful feature to keep for training.
+        </p>
+        <h4>Code Implementation</h4>
+        <pre><code class="language-python">
+# Library: Scipy
+from scipy import stats # Explicit Import
+
+# Setup: df=2 (degrees of freedom)
+# PDF at x=1
+pdf_val = stats.chi2.pdf(1, df=2)
+# Result: {{ continuous.chisquare }}
+        </code></pre>
+    </article>
+</section>
+
+<!-- ================= 8. REFERENCES ================= -->
+<section id="references">
+    <h2>3. References & Further Reading</h2>
+    <ul>
+        <li>
+            <a href="https://en.wikipedia.org/wiki/Probability_distribution" target="_blank">Probability Distribution - Wikipedia</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://docs.scipy.org/doc/scipy/reference/stats.html"
+        target="_blank"
+        >SciPy Stats Documentation</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %}
