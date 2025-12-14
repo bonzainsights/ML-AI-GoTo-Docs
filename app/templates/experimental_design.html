@@ -1,0 +1,240 @@
+{% extends "base.html" %} {% block content %}
+<h1>Experimental Design & Evaluation</h1>
+<p class="subtitle">How to properly judge model performance.</p>
+
+<section id="overview">
+  <p>
+    Building a model is only half the battle. To trust its predictions in the
+    real world, we need to evaluate it rigorously. This involves splitting data
+    correctly to avoid leakage and choosing metrics that align with the business
+    goal.
+  </p>
+</section>
+
+<!-- ================= 1. TRAIN / VALIDATION / TEST SPLITS ================= -->
+<section id="splitting">
+  <h2>1. Data Splitting Strategies</h2>
+  <p>We never train and test on the same data.</p>
+  <ul>
+    <li><strong>Training Set:</strong> Used to fit the model parameters.</li>
+    <li>
+      <strong>Validation Set:</strong> Used to tune hyperparameters during
+      development.
+    </li>
+    <li>
+      <strong>Test Set:</strong> Used ONLY once at the end to estimate final
+      performance.
+    </li>
+  </ul>
+
+  <h3>Random vs. Stratified Sampling</h3>
+  <p>
+    <strong>Stratified Sampling:</strong> Ensures that the proportion of classes
+    (e.g., Spam vs Not Spam) remains the same in train and test sets. Crucial
+    for imbalanced datasets.
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Proper splitting prevents <strong>Data Leakage</strong> and ensures the
+    model evaluates on unseen data. Stratification is essential for
+    <strong>Imbalanced Classification</strong> problems (e.g., Fraud Detection)
+    to ensure the test set represents the minority class.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Stratified Split
+from sklearn.model_selection import train_test_split
+import numpy as np
+
+# Imbalanced Data: 90% Class 0, 10% Class 1
+y = np.array([0]*90 + [1]*10)
+X = np.random.rand(100, 2)
+
+# Stratify=y ensures the 9:1 ratio is preserved
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# Test Set Class 1 Count: {{ res['split']['class1_count'] }} (Should be 2, i.e., 10% of 20)
+    </code></pre>
+</section>
+
+<!-- ================= 2. CLASSIFICATION METRICS ================= -->
+<section id="classification-metrics">
+  <h2>2. Classification Metrics</h2>
+
+  <h3>Confusion Matrix</h3>
+  <table style="width: 100%; text-align: center; border: 1px solid #555">
+    <tr>
+      <td></td>
+      <td><strong>Predicted Positive</strong></td>
+      <td><strong>Predicted Negative</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Actual Positive</strong></td>
+      <td style="background: #2d4036; color: white">True Positive (TP)</td>
+      <td style="background: #4a2c2c; color: white">False Negative (FN)</td>
+    </tr>
+    <tr>
+      <td><strong>Actual Negative</strong></td>
+      <td style="background: #4a2c2c; color: white">False Positive (FP)</td>
+      <td style="background: #2d4036; color: white">True Negative (TN)</td>
+    </tr>
+  </table>
+
+  <h3>Metrics</h3>
+  <ul>
+    <li>
+      <strong>Accuracy:</strong> $(TP+TN) / Total$. Good only for balanced
+      classes.
+    </li>
+    <li>
+      <strong>Precision:</strong> $TP / (TP + FP)$. "Of all predicted positives,
+      how many were real?" (Crucial for Spam detection).
+    </li>
+    <li>
+      <strong>Recall (Sensitivity):</strong> $TP / (TP + FN)$. "Of all real
+      positives, how many did we find?" (Crucial for Cancer detection).
+    </li>
+    <li>
+      <strong>F1 Score:</strong> $2 \cdot \frac{Precision \cdot
+      Recall}{Precision + Recall}$. Harmonic mean, good balance.
+    </li>
+  </ul>
+
+  <div class="math-block">
+    $$ TPR = \frac{TP}{TP+FN} \quad FPR = \frac{FP}{FP+TN} $$
+  </div>
+  <p class="equation-read-as">
+    "True Positive Rate equals True Positives divided by Real Positives. False
+    Positive Rate equals False Positives divided by Real Negatives."
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Accuracy is often misleading. We choose metrics based on the cost of errors:
+  </p>
+  <ul>
+    <li>
+      <strong>High Precision needed:</strong> When False Positives are costly
+      (e.g., Spam Filters blocking real emails).
+    </li>
+    <li>
+      <strong>High Recall needed:</strong> When False Negatives are dangerous
+      (e.g., Medical Diagnosis missing a disease).
+    </li>
+  </ul>
+
+  <h3>ROC & AUC</h3>
+  <p>
+    <strong>ROC Curve:</strong> Plots TPR vs FPR at different thresholds. <br />
+    <strong>AUC (Area Under Curve):</strong> Aggregate measure of performance.
+    1.0 is perfect, 0.5 is random guessing.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Classification Report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+
+# True vs Predicted
+y_true = [0, 0, 1, 1, 1, 0, 1, 0, 1, 1]
+y_pred = [0, 1, 1, 1, 0, 0, 1, 0, 1, 1]
+
+acc = accuracy_score(y_true, y_pred)
+prec = precision_score(y_true, y_pred)
+rec = recall_score(y_true, y_pred)
+f1 = f1_score(y_true, y_pred)
+
+auc = roc_auc_score(y_true, y_pred) 
+cm = confusion_matrix(y_true, y_pred)
+
+# Accuracy: {{ res['class_metrics']['acc'] }}
+# F1 Score: {{ res['class_metrics']['f1'] }}
+# AUC Score: {{ res['class_metrics']['auc'] }}
+# Confusion Matrix: {{ res['class_metrics']['cm'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 3. REGRESSION METRICS ================= -->
+<section id="regression-metrics">
+  <h2>3. Regression Metrics</h2>
+  <p>Used when predicting continuous values.</p>
+  <ul>
+    <li>
+      <strong>MAE (Mean Absolute Error):</strong> $\frac{1}{n}\sum|y -
+      \hat{y}|$. Robust to outliers.
+    </li>
+    <li>
+      <strong>RMSE (Root Mean Squared Error):</strong> $\sqrt{\frac{1}{n}\sum(y
+      - \hat{y})^2}$. Penalizes large errors heavily.
+    </li>
+    <li>
+      <strong>MAPE (Mean Absolute Percentage Error):</strong>
+      $\frac{100\%}{n}\sum|\frac{y - \hat{y}}{y}|$. Easy to interpret but
+      undefined if y=0.
+    </li>
+  </ul>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    We choose <strong>RMSE</strong> when we want to punish large errors severely
+    (e.g., predicting house prices where being off by $100k is much worse than
+    $10k). We use <strong>MAE</strong> when we want a robust metric that treats
+    all errors linearly.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Regression Metrics
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
+import numpy as np
+
+y_true_reg = [100, 150, 200, 250]
+y_pred_reg = [110, 140, 205, 260] # Some errors
+
+mae = mean_absolute_error(y_true_reg, y_pred_reg)
+rmse = np.sqrt(mean_squared_error(y_true_reg, y_pred_reg))
+mape = mean_absolute_percentage_error(y_true_reg, y_pred_reg) * 100
+
+# MAE: {{ res['reg_metrics']['mae'] }}
+# RMSE: {{ res['reg_metrics']['rmse'] }}
+# MAPE: {{ res['reg_metrics']['mape'] }}%
+
+# Manual RMSE Implementation
+manual_rmse = np.sqrt(np.mean((np.array(y_true_reg) - np.array(y_pred_reg))**2))
+# Manual RMSE: {{ res['reg_metrics']['manual_rmse'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 4. REFERENCES ================= -->
+<section id="references">
+  <h2>4. References & Further Reading</h2>
+  <ul>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/cross_validation.html"
+        target="_blank"
+        >Scikit-Learn: Cross-Validation</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/model_evaluation.html"
+        target="_blank"
+        >Scikit-Learn: Model Evaluation</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://developers.google.com/machine-learning/crash-course/classification/accuracy"
+        target="_blank"
+        >Google ML Crash Course: Classification</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %}

@@ -1,6 +1,12 @@
 from flask import Blueprint, render_template, jsonify, request, current_app
 import numpy as np
 from scipy import stats
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.naive_bayes import GaussianNB
+from sklearn.decomposition import PCA
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.utils import resample
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, confusion_matrix
 import pandas as pd
 import re
 import os
@@ -25,6 +31,11 @@ def get_or_build_index():
         'probability_basics.html': ('main.probability_basics', 'Probability Basics'),
         'probability_distributions.html': ('main.probability_distributions', 'Probability Distributions'),
         'statistical_inference.html': ('main.statistical_inference', 'Statistical Inference'),
+        'regression.html': ('main.regression_page', 'Regression & Linear Models'),
+        'bayesian_statistics.html': ('main.bayesian_statistics', 'Bayesian Statistics'),
+        'multivariate_statistics.html': ('main.multivariate_statistics', 'Multivariate Statistics'),
+        'statistical_learning.html': ('main.statistical_learning', 'Statistical Learning Concepts'),
+        'experimental_design.html': ('main.experimental_design', 'Experimental Design & Evaluation'),
         'how_to_contribute.html': ('main.contribute', 'Contribution Guide')
     }
     
@@ -50,6 +61,11 @@ def get_or_build_index():
         if filename == 'probability_basics.html': base_url = '/probability-basics'
         if filename == 'probability_distributions.html': base_url = '/probability-distributions'
         if filename == 'statistical_inference.html': base_url = '/statistical-inference'
+        if filename == 'regression.html': base_url = '/regression'
+        if filename == 'bayesian_statistics.html': base_url = '/bayesian-statistics'
+        if filename == 'multivariate_statistics.html': base_url = '/multivariate-statistics'
+        if filename == 'statistical_learning.html': base_url = '/statistical-learning'
+        if filename == 'experimental_design.html': base_url = '/experimental-design'
         if filename == 'how_to_contribute.html': base_url = '/contribute'
 
         index.append({
@@ -463,5 +479,230 @@ def statistical_inference():
     }
     
     return render_template('statistical_inference.html', res=results)
+
+
+@main.route('/regression')
+def regression_page():
+    results = {}
+    
+    # 1. Linear Regression
+    X = np.array([[1], [2], [3], [4], [5]])
+    y = np.array([2.1, 3.9, 6.1, 8.2, 10.1])
+    model = LinearRegression()
+    model.fit(X, y)
+    results['linear'] = {
+        'intercept': round(model.intercept_, 2),
+        'slope': round(model.coef_[0], 2)
+    }
+    
+    # 2. Logistic Regression
+    X_log = np.array([[1], [2], [10], [11]])
+    y_log = np.array([0, 0, 1, 1])
+    clf = LogisticRegression()
+    clf.fit(X_log, y_log)
+    # Predict probability for X=5
+    prob = clf.predict_proba([[5]])[0][1]
+    results['logistic'] = {
+        'prob': round(prob, 4)
+    }
+    
+    # 3. Regularization (Ridge)
+    np.random.seed(42)
+    X_rng = np.random.rand(10, 1)
+    y_rng = 2 * X_rng + 0.5 + np.random.randn(10, 1) * 0.5 
+    ridge = Ridge(alpha=1.0)
+    ridge.fit(X_rng, y_rng)
+    results['regularization'] = {
+        'coef': round(ridge.coef_[0][0], 4)
+    }
+    
+    return render_template('regression.html', res=results)
+
+
+@main.route('/bayesian-statistics')
+def bayesian_statistics():
+    results = {}
+    
+    # 1. Bayes Theorem Calculation
+    prior = 0.01
+    likelihood = 0.99
+    evidence = (0.99 * 0.01) + (0.05 * 0.99)
+    posterior = (likelihood * prior) / evidence
+    results['bayes'] = {
+        'posterior': round(posterior, 4)
+    }
+    
+    # 2. Naive Bayes
+    X = np.array([
+        [100, 20], [110, 22], [120, 25], # Children
+        [160, 60], [170, 70], [180, 80]  # Adults
+    ])
+    y = np.array([0, 0, 0, 1, 1, 1])
+
+    clf = GaussianNB()
+    clf.fit(X, y)
+    prediction = clf.predict([[165, 65]])[0]
+    results['naive_bayes'] = {
+        'prediction': "Adult" if prediction == 1 else "Child"
+    }
+    
+    return render_template('bayesian_statistics.html', res=results)
+
+
+@main.route('/multivariate-statistics')
+def multivariate_statistics():
+    results = {}
+    
+    # Data: Height (cm) vs Weight (kg)
+    data = np.array([
+        [170, 65],
+        [180, 80],
+        [160, 55],
+        [175, 70],
+        [165, 60]
+    ])
+    
+    # 1. Covariance
+    cov_matrix = np.cov(data, rowvar=False)
+    results['covariance'] = {
+        'var_height': round(cov_matrix[0, 0], 2),
+        'var_weight': round(cov_matrix[1, 1], 2),
+        'cov': round(cov_matrix[0, 1], 2)
+    }
+    
+    # 2. Eigenvalues
+    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+    # Sort by eigenvalue
+    idx = eigenvalues.argsort()[::-1]
+    eigenvalues = eigenvalues[idx]
+    eigenvectors = eigenvectors[:, idx]
+    
+    results['eigen'] = {
+        'val1': round(eigenvalues[0], 2),
+        'vec1': [round(x, 2) for x in eigenvectors[:, 0]]
+    }
+    
+    # 3. PCA
+    pca = PCA(n_components=1)
+    pca.fit(data)
+    results['pca'] = {
+        'explained_var': round(pca.explained_variance_ratio_[0], 4)
+    }
+    
+    # 4. SVD
+    U, S, Vt = np.linalg.svd(data, full_matrices=False)
+    results['svd'] = {
+        'singular_values': [round(x, 2) for x in S]
+    }
+
+    # 5. Multivariate Normal PDF
+    # Mean vector and Covariance matrix
+    mean_vec = np.array([0, 0])
+    cov_mat = np.array([[1, 0.5], [0.5, 1]])
+    # Point to evaluate
+    x_pt = np.array([1, 1])
+    pdf_val = stats.multivariate_normal.pdf(x_pt, mean=mean_vec, cov=cov_mat)
+    results['multivariate_normal'] = {
+        'pdf': round(pdf_val, 4)
+    }
+    
+    return render_template('multivariate_statistics.html', res=results)
+
+
+@main.route('/statistical-learning')
+def statistical_learning():
+    results = {}
+    
+    # 1. Cross-Validation
+    np.random.seed(42)
+    X = np.random.rand(50, 1)
+    y = 2 * X.squeeze() + 1 + np.random.randn(50) * 0.2
+    model = LinearRegression()
+    scores = cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')
+    results['cv'] = {
+        'mse': round(-1 * np.mean(scores), 4)
+    }
+    
+    # 2. Bootstrapping
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    means = []
+    # 500 samples for speed
+    for i in range(500):
+        boot = resample(data, replace=True, n_samples=len(data))
+        means.append(np.mean(boot))
+    results['bootstrap'] = {
+        'lower': round(np.percentile(means, 2.5), 2),
+        'upper': round(np.percentile(means, 97.5), 2)
+    }
+    
+    # 3. Gradient Descent Step
+    current_w = 4.0
+    learning_rate = 0.1
+    gradient = 2 * current_w # Derivative of w^2 is 2w
+    next_w = current_w - (learning_rate * gradient)
+    results['gradient'] = {
+        'new_w': round(next_w, 2)
+    }
+    
+    # 4. AIC Calculation
+    # We need to fit the model first to get residuals
+    model.fit(X, y)
+    preds = model.predict(X)
+    sse = np.sum((y - preds)**2)
+    n = 50
+    k = 2
+    # Log-Likelihood for Gaussian
+    log_likelihood = -n/2 * (1 + np.log(2 * np.pi) + np.log(sse/n))
+    aic = 2*k - 2*log_likelihood
+    results['aic'] = {
+        'score': round(aic, 2)
+    }
+    
+    return render_template('statistical_learning.html', res=results)
+
+
+@main.route('/experimental-design')
+def experimental_design():
+    results = {}
+    
+    # 1. Stratified Split Example
+    y = np.array([0]*90 + [1]*10)
+    X = np.random.rand(100, 2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+    # Count class 1 in test set
+    class1_count = np.sum(y_test)
+    results['split'] = {
+        'class1_count': int(class1_count)
+    }
+    
+    # 2. Classification Metrics
+    y_true = [0, 0, 1, 1, 1, 0, 1, 0, 1, 1]
+    y_pred = [0, 1, 1, 1, 0, 0, 1, 0, 1, 1]
+    
+    results['class_metrics'] = {
+        'acc': round(accuracy_score(y_true, y_pred), 2),
+        'f1': round(f1_score(y_true, y_pred), 2),
+        'auc': round(roc_auc_score(y_true, y_pred), 2),
+        'cm': confusion_matrix(y_true, y_pred).tolist()
+    }
+    
+    # 3. Regression Metrics
+    y_true_reg = [100, 150, 200, 250]
+    y_pred_reg = [110, 140, 205, 260] # Errors: 10, -10, 5, 10
+    
+    # Manual RMSE Calculation
+    errors = np.array(y_true_reg) - np.array(y_pred_reg)
+    squared_errors = errors ** 2
+    mean_sq_error = np.mean(squared_errors)
+    manual_rmse = np.sqrt(mean_sq_error)
+    
+    results['reg_metrics'] = {
+        'mae': round(mean_absolute_error(y_true_reg, y_pred_reg), 2),
+        'rmse': round(np.sqrt(mean_squared_error(y_true_reg, y_pred_reg)), 2),
+        'mape': round(mean_absolute_percentage_error(y_true_reg, y_pred_reg) * 100, 2),
+        'manual_rmse': round(manual_rmse, 2)
+    }
+
+    return render_template('experimental_design.html', res=results)
 
 

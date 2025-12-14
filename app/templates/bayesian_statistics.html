@@ -1,0 +1,195 @@
+{% extends "base.html" %} {% block content %}
+<h1>Bayesian Statistics</h1>
+<p class="subtitle">Probabilistic reasoning and updating beliefs with data.</p>
+
+<section id="overview">
+  <p>
+    Bayesian statistics offers a framework for reasoning about uncertainty.
+    Unlike frequentist statistics which treats parameters as fixed constants,
+    Bayesian methods treat parameters as random variables with their own
+    distributions. This approach is widely used in Machine Learning, especially
+    in <strong>probabilistic models</strong> and when incorporating prior
+    knowledge is essential.
+  </p>
+</section>
+
+<!-- ================= 1. BAYES' THEOREM ================= -->
+<section id="bayes-theorem">
+  <h2>1. Bayes' Theorem</h2>
+  <p>
+    The fundamental rule for updating the probability of a hypothesis ($H$)
+    given some observed evidence ($E$).
+  </p>
+
+  <div class="math-block">$$ P(H|E) = \frac{P(E|H) \cdot P(H)}{P(E)} $$</div>
+  <p class="equation-read-as">
+    "The probability of Hypothesis given Evidence equals the probability of
+    Evidence given Hypothesis times the probability of Hypothesis, divided by
+    the probability of Evidence."
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    It allows us to update our model's beliefs (parameters) as we see more
+    training data. It is the core of **Naive Bayes** classifiers and **Bayesian
+    Neural Networks**.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Simple Bayes Update Example
+def bayes_update(prior, likelihood, evidence):
+    return (likelihood * prior) / evidence
+
+# Medical Test Example
+# P(Disease) = 0.01 (Prior)
+# P(Pos|Disease) = 0.99 (Sensitivity/Likelihood)
+# P(Pos) = P(Pos|Disease)P(Disease) + P(Pos|NoDisease)P(NoDisease)
+# Let's say P(Pos) (Evidence) calculates to ~0.059
+
+prior = 0.01
+likelihood = 0.99
+evidence = 0.059 # (0.99*0.01) + (0.05*0.99) approx
+
+posterior = bayes_update(prior, likelihood, evidence)
+# Posterior Probability: {{ res['bayes']['posterior'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 2. PRIORS, LIKELIHOODS, POSTERIORS ================= -->
+<section id="components">
+  <h2>2. Priors, Likelihoods, Posteriors</h2>
+  <div class="card">
+    <ul>
+      <li>
+        <strong>Prior $P(H)$:</strong> Our initial belief about the hypothesis
+        before seeing data.
+      </li>
+      <li>
+        <strong>Likelihood $P(E|H)$:</strong> How probable is the evidence
+        assuming the hypothesis is true?
+      </li>
+      <li>
+        <strong>Posterior $P(H|E)$:</strong> Our updated belief after
+        considering the evidence.
+      </li>
+      <li>
+        <strong>Evidence $P(E)$:</strong> The total probability of the evidence
+        (normalizing constant).
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= 3. MAP vs MLE ================= -->
+<section id="map-vs-mle">
+  <h2>3. MAP vs MLE</h2>
+  <p>Two common ways to estimate parameters ($\theta$) of a model:</p>
+  <ul>
+    <li>
+      <strong>Maximum Likelihood Estimation (MLE):</strong> Maximize
+      $P(Data|\theta)$. <br /><em
+        >"What parameters make the observed data most probable?"</em
+      >
+      <br />Used in: Standard Linear Regression, Neural Networks (minimizing
+      MSE/Cross-Entropy).
+    </li>
+    <li>
+      <strong>Maximum A Posteriori (MAP):</strong> Maximize $P(\theta|Data)
+      \propto P(Data|\theta) \cdot P(\theta)$. <br /><em
+        >"What are the most probable parameters given the data AND our prior
+        beliefs?"</em
+      >
+      <br />Used in: Regularized Regression (L2 Regularization is equivalent to
+      MAP with a Gaussian Prior).
+    </li>
+  </ul>
+</section>
+
+<!-- ================= 4. NAIVE BAYES CLASSIFIER ================= -->
+<section id="naive-bayes">
+  <h2>4. Naive Bayes Classifier</h2>
+  <p>
+    A simple but powerful family of classifiers based on applying Bayes' theorem
+    with strong (naive) "independence assumptions" between the features.
+  </p>
+
+  <div class="math-block">
+    $$ P(y|x_1, \dots, x_n) \propto P(y) \prod_{i=1}^{n} P(x_i|y) $$
+  </div>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Despite assuming features are independent (which is rarely true), it works
+    surprisingly well for **Text Classification** (Spam Detection, Sentiment
+    Analysis) and is very fast to train.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Gaussian Naive Bayes
+from sklearn.naive_bayes import GaussianNB
+import numpy as np
+
+# Training Data (Height, Weight) -> Class (0: Child, 1: Adult)
+X = np.array([
+    [100, 20], [110, 22], [120, 25], # Children
+    [160, 60], [170, 70], [180, 80]  # Adults
+])
+y = np.array([0, 0, 0, 1, 1, 1])
+
+clf = GaussianNB()
+clf.fit(X, y)
+
+# Predict for a new person (Height 165, Weight 65)
+prediction = clf.predict([[165, 65]])[0]
+predicted_label = "Adult" if prediction == 1 else "Child"
+# Prediction: {{ res['naive_bayes']['prediction'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 5. BAYESIAN NETWORKS ================= -->
+<section id="bayesian-networks">
+  <h2>5. Bayesian Networks</h2>
+  <p>
+    A probabilistic graphical model that represents a set of variables and their
+    conditional dependencies via a
+    <strong>Directed Acyclic Graph (DAG)</strong>.
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    They are used for **Inference** and **Causal Reasoning**. For example, in
+    medical diagnosis, nodes could represent symptoms and diseases, and edges
+    represent causal probabilities. They handle missing data well and explain
+    "why" a decision was made.
+  </p>
+</section>
+
+<!-- ================= 6. REFERENCES ================= -->
+<section id="references">
+  <h2>6. References & Further Reading</h2>
+  <ul>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/naive_bayes.html"
+        target="_blank"
+        >Scikit-Learn: Naive Bayes</a
+      >
+    </li>
+    <li>
+      <a href="https://brilliant.org/wiki/bayes-theorem/" target="_blank"
+        >Bayes' Theorem (Brilliant.org)</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://en.wikipedia.org/wiki/Bayesian_statistics"
+        target="_blank"
+        >Bayesian Statistics - Wikipedia</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %}

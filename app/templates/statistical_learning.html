@@ -1,0 +1,198 @@
+{% extends "base.html" %} {% block content %}
+<h1>Statistical Learning Concepts</h1>
+<p class="subtitle">The theoretical foundation of Machine Learning.</p>
+
+<section id="overview">
+  <p>
+    Statistical learning refers to a set of tools for modeling and understanding
+    complex datasets. It is the theoretical framework that underpins how we
+    train, evaluate, and select machine learning models.
+  </p>
+</section>
+
+<!-- ================= 1. BIAS-VARIANCE TRADEOFF ================= -->
+<section id="bias-variance">
+  <h2>1. Bias-Variance Tradeoff</h2>
+  <p>
+    The fundamental conflict in supervised learning. It explains the difficulty
+    of minimizing the two sources of error that prevent models from
+    generalizing:
+  </p>
+  <ul>
+    <li>
+      <strong>Bias (Underfitting):</strong> Error due to strictly assuming a
+      simple model (e.g., linear) when the real world is complex. High bias
+      models miss relevant relations.
+    </li>
+    <li>
+      <strong>Variance (Overfitting):</strong> Error due to sensitivity to small
+      fluctuations in the training set. High variance models model random noise.
+    </li>
+  </ul>
+
+  <div class="math-block">
+    $$ E[(y - \hat{f}(x))^2] = \text{Bias}[\hat{f}(x)]^2 +
+    \text{Var}[\hat{f}(x)] + \sigma^2 $$
+  </div>
+  <p class="equation-read-as">
+    "Total Error equals Bias squared plus Variance plus Irreducible Error."
+  </p>
+</section>
+
+<!-- ================= 2. CROSS-VALIDATION ================= -->
+<section id="cross-validation">
+  <h2>2. Cross-Validation</h2>
+  <p>
+    A resampling procedure used to evaluate machine learning models on a limited
+    data sample.
+    <strong>K-Fold Cross-Validation</strong> splits data into $k$ subsets
+    (folds). The model is trained on $k-1$ folds and tested on the remaining
+    fold. This is repeated $k$ times.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: K-Fold Cross-Validation
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# Synthetic Data
+X = np.random.rand(50, 1)
+y = 2 * X.squeeze() + 1 + np.random.randn(50) * 0.2
+
+model = LinearRegression()
+
+# 5-Fold Cross-Validation
+scores = cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')
+mean_mse = -1 * np.mean(scores)
+
+# Average MSE: {{ res['cv']['mse'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 3. BOOTSTRAPPING ================= -->
+<section id="bootstrapping">
+  <h2>3. Bootstrapping</h2>
+  <p>
+    A powerful statistical method that involves resampling the dataset
+    <strong>with replacement</strong> to creating many simulated samples. It
+    allows us to estimate the uncertainty (standard error, confidence intervals)
+    of any statistic (mean, median, coefficients).
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Bootstrapping
+from sklearn.utils import resample
+
+# Original Sample
+data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+means = []
+
+# Generate 1000 Bootstrap Samples
+for i in range(1000):
+    boot = resample(data, replace=True, n_samples=len(data))
+    means.append(np.mean(boot))
+
+lower_ci = np.percentile(means, 2.5)
+upper_ci = np.percentile(means, 97.5)
+
+# 95% Confidence Interval for Mean: [{{ res['bootstrap']['lower'] }}, {{ res['bootstrap']['upper'] }}]
+    </code></pre>
+</section>
+
+<!-- ================= 4. LIKELIHOOD & LOSS FUNCTIONS ================= -->
+<section id="likelihood-loss">
+  <h2>4. Likelihood & Loss Functions</h2>
+  <p>How do we measure "goodness of fit"?</p>
+  <ul>
+    <li>
+      <strong>Likelihood ($L$):</strong> The probability of seeing the observed
+      data given a specific model parameter. We want to <em>Maximize</em> this
+      (MLE).
+    </li>
+    <li>
+      <strong>Loss Function ($J$):</strong> A penalty for bad predictions (e.g.,
+      Squared Error, Cross-Entropy). We want to <em>Minimize</em> this.
+    </li>
+  </ul>
+  <p>
+    Mathematically, minimizing the **Mean Squared Error** (MSE) is identical to
+    maximizing the **Likelihood** for a Gaussian distribution.
+  </p>
+</section>
+
+<!-- ================= 5. GRADIENT-BASED OPTIMIZATION ================= -->
+<section id="gradient-descent">
+  <h2>5. Gradient-Based Optimization</h2>
+  <p>
+    How do models "learn"? They iteratively adjust parameters to minimize the
+    Loss Function.
+    <strong>Gradient Descent</strong> calculates the gradient (slope) of the
+    loss with respect to parameters and takes a step in the opposite direction.
+  </p>
+
+  <div class="math-block">
+    $$ \theta_{new} = \theta_{old} - \alpha \nabla_{\theta} J(\theta) $$
+  </div>
+  <p class="equation-read-as">
+    "New theta equals old theta minus learning rate times the gradient of Loss
+    w.r.t theta."
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Gradient Descent Step (Simplified)
+# Function to minimize: J(w) = w^2 (Parabola)
+# Gradient: dJ/dw = 2w
+
+current_w = 4.0
+learning_rate = 0.1
+
+# Take one step
+gradient = 2 * current_w
+next_w = current_w - (learning_rate * gradient)
+
+# Old w: 4.0 -> New w: {{ res['gradient']['new_w'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 6. INFORMATION CRITERIA (AIC, BIC) ================= -->
+<section id="aic-bic">
+  <h2>6. Information Criteria (AIC, BIC)</h2>
+  <p>
+    Metrics for model selection that punish model complexity to prevent
+    overfitting. Lower is better.
+  </p>
+  <ul>
+    <li>
+      <strong>AIC (Akaike Information Criterion):</strong> $2k - 2\ln(\hat{L})$
+    </li>
+    <li>
+      <strong>BIC (Bayesian Information Criterion):</strong> $k \ln(n) -
+      2\ln(\hat{L})$
+    </li>
+  </ul>
+  <p>
+    Where $k$ is the number of parameters and $n$ is sample size. BIC punishes
+    complexity ($k$) more harshly as $n$ grows.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Calculating AIC manually
+# Fit Linear Regression -> Get SSE -> Estimate Log-Likelihood
+n = 50
+k = 2 # Intercept + Slope
+sse = np.sum((y - model.predict(X))**2) # Sum of Squared Errors
+
+# Log-Likelihood estimation for Normal errors
+log_likelihood = -n/2 * (1 + np.log(2 * np.pi) + np.log(sse/n))
+
+aic = 2*k - 2*log_likelihood
+# AIC Score: {{ res['aic']['score'] }}
+    </code></pre>
+</section>
+
+{% endblock %}
