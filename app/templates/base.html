@@ -19,10 +19,9 @@
     />
 
     <!-- Highlight.js for Syntax Highlighting -->
-    <!-- Highlight.js for Syntax Highlighting -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+      href="{{ url_for('static', filename='vendor/vs2015.min.css') }}"
       id="hljs-theme"
     />
 
@@ -133,6 +132,31 @@
                     >Statistical Inference</a
                   >
                 </li>
+                <li>
+                  <a href="{{ url_for('main.regression_page') }}"
+                    >Regression & Linear Models</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.bayesian_statistics') }}"
+                    >Bayesian Statistics</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.multivariate_statistics') }}"
+                    >Multivariate Statistics</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.statistical_learning') }}"
+                    >Statistical Learning Concepts</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.experimental_design') }}"
+                    >Experimental Design & Evaluation</a
+                  >
+                </li>
               </ul>
             </li>
           </ul>
@@ -166,7 +190,7 @@
     </div>
 
     <!-- Highlight.js Script -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/highlight.min.js') }}"></script>
     <script>
       hljs.highlightAll();
     </script>
@@ -181,10 +205,10 @@
       function updateHighlightJsTheme(theme) {
         if (theme === "dark") {
           hljsThemeLink.href =
-            "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css";
+            "{{ url_for('static', filename='vendor/vs2015.min.css') }}";
         } else {
           hljsThemeLink.href =
-            "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css";
+            "{{ url_for('static', filename='vendor/atom-one-light.min.css') }}";
         }
       }
 

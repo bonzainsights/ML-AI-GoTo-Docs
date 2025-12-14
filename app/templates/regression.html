@@ -1,0 +1,238 @@
+{% extends "base.html" %} {% block content %}
+<h1>Regression & Linear Models</h1>
+<p class="subtitle">The foundation of Machine Learning algorithms.</p>
+
+<section id="overview">
+  <p>
+    Almost all Machine Learning algorithms build on these principles. Even
+    complex Neural Networks are essentially layers of linear regressions
+    followed by non-linear activations. Understanding regression is
+    understanding how machines "learn" relationships from data.
+  </p>
+</section>
+
+<!-- ================= 1. SIMPLE & MULTIPLE LINEAR REGRESSION ================= -->
+<section id="linear-regression">
+  <h2>1. Simple & Multiple Linear Regression</h2>
+  <p>
+    Linear regression models the relationship between a dependent variable $y$
+    and one or more independent variables $X$ using a linear function.
+  </p>
+
+  <div class="math-block">
+    $$ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + ... + \beta_n x_n + \epsilon $$
+  </div>
+  <p class="equation-read-as">
+    "y equals beta-nought plus beta-one x-one ... plus epsilon (error)."
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    It is the simplest form of **Supervised Learning** for regression tasks
+    (predicting continuous values). The weights ($\beta$) represent the
+    *importance* of each feature.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Linear Regression
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Synthetic Data
+X = np.array([[1], [2], [3], [4], [5]])
+y = np.array([2.1, 3.9, 6.1, 8.2, 10.1]) # Roughly y = 2x
+
+model = LinearRegression()
+model.fit(X, y)
+
+# Learned Parameters
+intercept = model.intercept_
+slope = model.coef_[0]
+# Result: Intercept: {{ res['linear']['intercept'] }}, Slope: {{ res['linear']['slope'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 2. LEAST SQUARES ESTIMATION ================= -->
+<section id="least-squares">
+  <h2>2. Least Squares Estimation</h2>
+  <p>
+    The method used to find the best-fitting line. It minimizes the sum of the
+    squares of the vertical differences (residuals) between the observed data
+    and the fitted line.
+  </p>
+
+  <div class="math-block">
+    $$ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$
+  </div>
+  <p class="equation-read-as">
+    "Mean Squared Error equals one over n times the sum of squared differences
+    between actual y and predicted y."
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    This introduces the concept of a **Loss Function**. Training a model means
+    minimizing this Loss Function via optimization (like the analytical Ordinary
+    Least Squares solution or Gradient Descent).
+  </p>
+</section>
+
+<!-- ================= 3. LOGISTIC REGRESSION ================= -->
+<section id="logistic-regression">
+  <h2>3. Logistic Regression</h2>
+  <p>
+    Despite the name, this is used for **Classification**. It applies the
+    Sigmoid function to the linear output to squash predictions between 0 and 1
+    (probabilities).
+  </p>
+
+  <div class="math-block">
+    $$ P(y=1|X) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 X)}} $$
+  </div>
+  <p class="equation-read-as">
+    "Probability of y being 1 given X equals 1 divided by (1 plus e to the
+    negative linear predictor)."
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    It is the baseline for binary classification. It introduces
+    **non-linearity** (the Sigmoid activation), which is the building block of
+    Neural Networks.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Logistic Regression
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+# Binary Data (0 or 1)
+X = np.array([[1], [2], [10], [11]])
+y = np.array([0, 0, 1, 1])
+
+clf = LogisticRegression()
+clf.fit(X, y)
+
+# Prediction for new data
+prob = clf.predict_proba([[5]])[0][1]
+# Probability of Class 1 for X=5: {{ res['logistic']['prob'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 4. REGULARIZATION ================= -->
+<section id="regularization">
+  <h2>4. Regularization: Lasso, Ridge, Elastic Net</h2>
+  <p>
+    Techniques to prevent **Overfitting** by adding a penalty term to the Loss
+    Function.
+  </p>
+
+  <div class="card">
+    <ul>
+      <li>
+        <strong>Lasso (L1):</strong> Adds absolute value of coefficients. Can
+        reduce weights to zero (Feature Selection).
+      </li>
+      <li>
+        <strong>Ridge (L2):</strong> Adds squared value of coefficients. Shrinks
+        weights but keeps them non-zero.
+      </li>
+      <li><strong>Elastic Net:</strong> Combines L1 and L2 penalties.</li>
+    </ul>
+  </div>
+
+  <div class="math-block">
+    $$ Loss + \lambda \sum |\beta_j| \text{ (Lasso)} \quad \text{vs} \quad Loss
+    + \lambda \sum \beta_j^2 \text{ (Ridge)} $$
+  </div>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    Regularization is crucial when you have many features or little data. It
+    simplifies the model, making it generalized better to unseen data
+    (Bias-Variance Tradeoff).
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: Ridge (L2) Regularization
+from sklearn.linear_model import Ridge
+
+# Noisy small dataset
+X_rng = np.random.rand(10, 1)
+y_rng = 2 * X_rng + 0.5 + np.random.randn(10, 1) * 0.5 
+
+ridge = Ridge(alpha=1.0) # alpha is the regularization strength (lambda)
+ridge.fit(X_rng, y_rng)
+
+coef = ridge.coef_[0][0]
+# Ridge Coefficient: {{ res['regularization']['coef'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 5. MODEL ASSUMPTIONS ================= -->
+<section id="assumptions">
+  <h2>5. Model Assumptions</h2>
+  <p>Linear regression relies on several key assumptions to be valid:</p>
+  <ul>
+    <li>
+      <strong>Linearity:</strong> The relationship between X and y is linear.
+    </li>
+    <li>
+      <strong>Independence:</strong> Observations are independent of each other.
+    </li>
+    <li>
+      <strong>Homoscedasticity:</strong> The variance of errors is constant
+      across all levels of X.
+    </li>
+    <li>
+      <strong>Normality:</strong> The errors follows a normal distribution.
+    </li>
+  </ul>
+</section>
+
+<!-- ================= 6. RESIDUAL ANALYSIS ================= -->
+<section id="residuals">
+  <h2>6. Residual Analysis</h2>
+  <p>
+    Analyzing the residuals ($y - \hat{y}$) helps debug the model. If
+    assumptions are violated, residuals will show patterns instead of random
+    noise.
+  </p>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    "Debugging" in ML often means checking residuals. If residuals have a
+    pattern (e.g., a curve), it means your linear model missed non-linear
+    information, suggesting you might need a more complex model or feature
+    engineering.
+  </p>
+</section>
+
+<!-- ================= 7. REFERENCES ================= -->
+<section id="references">
+  <h2>7. References & Further Reading</h2>
+  <ul>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/linear_model.html"
+        target="_blank"
+        >Scikit-Learn: Linear Models</a
+      >
+    </li>
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Linear_regression" target="_blank"
+        >Linear Regression - Wikipedia</a
+      >
+    </li>
+    <li>
+      <a href="https://www.coursera.org/learn/machine-learning" target="_blank"
+        >Andrew Ng's ML Course (Regression)</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %}

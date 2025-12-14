@@ -1,0 +1,194 @@
+{% extends "base.html" %} {% block content %}
+<h1>Multivariate Statistics</h1>
+<p class="subtitle">Understanding relationships between many variables.</p>
+
+<section id="overview">
+  <p>
+    In real-world Machine Learning, we rarely deal with a single variable. Data
+    is high-dimensional. Multivariate statistics provides the tools to analyze,
+    visualize, and reduce the complexity of such data.
+  </p>
+</section>
+
+<!-- ================= 1. MULTIVARIATE NORMAL DISTRIBUTION ================= -->
+<section id="multivariate-normal">
+  <h2>1. Multivariate Normal Distribution</h2>
+  <p>
+    The generalization of the 1D Gaussian (bell curve) to $d$ dimensions.
+    Instead of a scalar mean $\mu$ and variance $\sigma^2$, we have a vector
+    mean $\mathbf{\mu}$ and a <strong>Covariance Matrix</strong> $\Sigma$.
+  </p>
+
+  <div class="math-block">
+    $$ f(\mathbf{x}) = \frac{1}{\sqrt{(2\pi)^k |\Sigma|}}
+    \exp\left(-\frac{1}{2}(\mathbf{x}-\mathbf{\mu})^T \Sigma^{-1}
+    (\mathbf{x}-\mathbf{\mu})\right) $$
+  </div>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    It is the default assumption for many algorithms, including **Gaussian
+    Mixture Models (GMM)**, **Linear Discriminant Analysis (LDA)**, and **VAE
+    (Variational Autoencoders)** latent spaces.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scipy: Multivariate Normal PDF
+from scipy.stats import multivariate_normal
+import numpy as np
+
+# Define Mean Vector (2D) and Covariance Matrix
+mean = np.array([0, 0])
+cov = np.array([[1, 0.5], 
+                [0.5, 1]])
+
+# Create distribution
+dist = multivariate_normal(mean=mean, cov=cov)
+
+# Calculate Probability Density at point (1, 1)
+pdf_val = dist.pdf([1, 1])
+# PDF Value: {{ res['multivariate_normal']['pdf'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 2. COVARIANCE & CORRELATION ================= -->
+<section id="covariance">
+  <h2>2. Covariance & Correlation Matrix</h2>
+  <p>How do two variables change together?</p>
+  <ul>
+    <li>
+      <strong>Covariance:</strong> Unscaled measure of joint variability.
+      Positive means they move together, negative means opposite.
+    </li>
+    <li><strong>Correlation:</strong> Scaled version (between -1 and 1).</li>
+  </ul>
+
+  <div class="math-block">$$ Cov(X, Y) = E[(X - \mu_X)(Y - \mu_Y)] $$</div>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Numpy: Covariance Matrix
+import numpy as np
+
+# Data: Height (cm) vs Weight (kg) for 5 people
+data = np.array([
+    [170, 65],
+    [180, 80],
+    [160, 55],
+    [175, 70],
+    [165, 60]
+])
+
+# Calculate Covariance (Rowvar=False means columns are variables)
+cov_matrix = np.cov(data, rowvar=False)
+
+# Variance of Height: {{ res['covariance']['var_height'] }}
+# Variance of Weight: {{ res['covariance']['var_weight'] }}
+# Covariance: {{ res['covariance']['cov'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 3. EIGENVALUES & EIGENVECTORS ================= -->
+<section id="eigen">
+  <h2>3. Eigenvalues & Eigenvectors</h2>
+  <p>
+    For a square matrix $A$, an eigenvector $\mathbf{v}$ is a non-zero vector
+    that changes only in scale (by $\lambda$) when $A$ is applied to it.
+  </p>
+
+  <div class="math-block">$$ A\mathbf{v} = \lambda\mathbf{v} $$</div>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    They represent the **"principal axes"** of the data's rotation or variance.
+    They are the core of **PCA**, **SVD**, and **Google's PageRank** algorithm.
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Numpy: Eigendecomposition of the Covariance Matrix
+eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+
+# 1st Eigenvalue (Variance along PC1): {{ res['eigen']['val1'] }}
+# 1st Eigenvector (Direction of PC1): {{ res['eigen']['vec1'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 4. PCA (PRINCIPAL COMPONENT ANALYSIS) ================= -->
+<section id="pca">
+  <h2>4. PCA (Principal Component Analysis)</h2>
+  <p>
+    A technique to reduce the dimensionality of data while preserving as much
+    variance as possible. It does this by finding the eigenvectors of the
+    covariance matrix (Principal Components).
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Scikit-Learn: PCA
+from sklearn.decomposition import PCA
+
+# Reduce 2D data (Height, Weight) to 1D
+pca = PCA(n_components=1)
+pca.fit(data)
+
+explained_variance = pca.explained_variance_ratio_[0]
+# Explained Variance Ratio: {{ res['pca']['explained_var'] }}
+# (Means this 1 dimension captures ~99% of the information)
+    </code></pre>
+</section>
+
+<!-- ================= 5. SVD (SINGULAR VALUE DECOMPOSITION) ================= -->
+<section id="svd">
+  <h2>5. SVD (Singular Value Decomposition)</h2>
+  <p>
+    A general matrix factorization method applicable to *any* matrix (not just
+    square ones).
+  </p>
+
+  <div class="math-block">$$ A = U \Sigma V^T $$</div>
+
+  <h3>Why is this used in ML?</h3>
+  <p>
+    SVD is the computational engine behind **PCA**. It is also used in
+    **Recommender Systems** (Matrix Factorization) and **Natural Language
+    Processing** (LSA/LSI).
+  </p>
+
+  <h3>Code Implementation</h3>
+  <pre><code class="language-python">
+# Numpy: SVD
+U, S, Vt = np.linalg.svd(data, full_matrices=False)
+
+# Singular Values: {{ res['svd']['singular_values'] }}
+    </code></pre>
+</section>
+
+<!-- ================= 6. REFERENCES ================= -->
+<section id="references">
+  <h2>6. References & Further Reading</h2>
+  <ul>
+    <li>
+      <a
+        href="https://scikit-learn.org/stable/modules/decomposition.html#pca"
+        target="_blank"
+        >Scikit-Learn: PCA</a
+      >
+    </li>
+    <li>
+      <a
+        href="https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors"
+        target="_blank"
+        >Eigenvalues and Eigenvectors - Wikipedia</a
+      >
+    </li>
+    <li>
+      <a href="https://web.stanford.edu/class/cs168/l/l9.pdf" target="_blank"
+        >SVD Lecture Notes (Stanford)</a
+      >
+    </li>
+  </ul>
+</section>
+
+{% endblock %}
