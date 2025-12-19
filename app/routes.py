@@ -1,13 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request, current_app
-import numpy as np
-from scipy import stats
-from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
-from sklearn.naive_bayes import GaussianNB
-from sklearn.decomposition import PCA
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.utils import resample
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, confusion_matrix
-import pandas as pd
+import calc.calculate_static_values as calc
 import re
 import os
 
@@ -130,284 +122,17 @@ def ai_intro():
 
 @main.route('/probability-basics')
 def probability_basics():
-    # --- 1. Probability Rules (Bayes) ---
-    # P(A|B) = P(B|A) * P(A) / P(B)
-    # Scenario: Disease testing
-    p_disease = 0.01        # P(A)
-    p_pos_given_disease = 0.99 # P(B|A) (Sensitivity)
-    p_pos_given_no_disease = 0.05 # False positive rate
-    
-    # P(B) = P(B|A)P(A) + P(B|~A)P(~A)
-    p_pos = (p_pos_given_disease * p_disease) + (p_pos_given_no_disease * (1 - p_disease))
-    
-    p_disease_given_pos = (p_pos_given_disease * p_disease) / p_pos
-    
-    bayes_data = {
-        'p_a': p_disease,
-        'p_b_given_a': p_pos_given_disease,
-        'p_b': round(p_pos, 4),
-        'result': round(p_disease_given_pos, 4)
-    }
-
-    # --- 2. Random Variables (Scipy) ---
-    # Normal Distribution (Continuous)
-    norm_rv = stats.norm(loc=0, scale=1)
-    norm_pdf_0 = norm_rv.pdf(0)
-    norm_cdf_0 = norm_rv.cdf(0) # Should be 0.5
-    
-    # Binomial Distribution (Discrete)
-    # 10 trials, p=0.5
-    binom_rv = stats.binom(n=10, p=0.5)
-    binom_pmf_5 = binom_rv.pmf(5) # Prob of exactly 5 heads
-    
-    rv_data = {
-        'norm_pdf_0': round(norm_pdf_0, 4),
-        'norm_cdf_0': round(norm_cdf_0, 4),
-        'binom_pmf_5': round(binom_pmf_5, 4)
-    }
-
-    # --- 3. Expectation & Variance (Numpy) ---
-    # Discrete case: Rolling a fair die
-    die_outcomes = np.array([1, 2, 3, 4, 5, 6])
-    die_probs = np.array([1/6] * 6)
-    
-    expected_value = np.sum(die_outcomes * die_probs)
-    # Var(X) = E[X^2] - (E[X])^2
-    expected_sq = np.sum((die_outcomes ** 2) * die_probs)
-    variance = expected_sq - (expected_value ** 2)
-    
-    ev_data = {
-        'expected_value': round(expected_value, 2),
-        'variance': round(variance, 2)
-    }
-
-    # --- 4. Joint & Marginal (Pandas) ---
-    # Scenario: Weather (Sunny, Rainy) vs Commute (Bus, Car)
-    data = {
-        'Weather': ['Sunny', 'Sunny', 'Rainy', 'Sunny', 'Rainy', 'Rainy', 'Sunny', 'Rainy', 'Sunny', 'Rainy'],
-        'Commute': ['Walk', 'Bus',  'Bus',   'Walk',  'Car',   'Bus',   'Walk',  'Car',   'Bus',   'Car']
-    }
-    df = pd.DataFrame(data)
-    joint_probs = pd.crosstab(df['Weather'], df['Commute'], normalize=True)
-    
-    # Marginal probs
-    marginal_weather = joint_probs.sum(axis=1) # Sum over columns to get row sums
-    marginal_commute = joint_probs.sum(axis=0) # Sum over rows to get column sums
-    
-    joint_data = {
-        'joint': joint_probs.to_string(),
-        'marginal_weather': marginal_weather.to_dict(),
-        'marginal_commute': marginal_commute.to_dict()
-    }
-
-    return render_template('probability_basics.html', 
-                           bayes=bayes_data, 
-                           rv=rv_data, 
-                           ev=ev_data, 
-                           joint=joint_data)
+    res = calc.probability_basics_results()
+    return render_template('probability_basics.html', **res)
 
 @main.route('/statistics')
 def statistics_page():
-    # Dataset 1 (X)
-    data_x = [12, 15, 12, 18, 20, 22, 12, 25, 30]
-    # Dataset 2 (Y) - correlated somewhat with X for demonstration
-    data_y = [11, 14, 13, 19, 21, 24, 11, 26, 31]
-    
-    # --- Manual Calculations ---
-    # Variance
-    mean_val = sum(data_x) / len(data_x)
-    manual_var = sum((x - mean_val) ** 2 for x in data_x) / (len(data_x) - 1)
-    # Std Dev
-    manual_std = manual_var ** 0.5
-    # Covariance
-    mean_x = sum(data_x) / len(data_x)
-    mean_y = sum(data_y) / len(data_y)
-    manual_cov = sum((data_x[i] - mean_x) * (data_y[i] - mean_y) for i in range(len(data_x))) / (len(data_x) - 1)
-    # Range
-    manual_range = max(data_x) - min(data_x)
-    # Percentiles (Approximate manual method for demonstration)
-    sorted_x = sorted(data_x)
-    manual_p25 = sorted_x[int(0.25 * len(sorted_x))]
-    manual_p75 = sorted_x[int(0.75 * len(sorted_x))]
-    manual_iqr = manual_p75 - manual_p25
-    
-    # Correlation (Manual)
-    # Need std_y first
-    manual_var_y = sum((y - mean_y) ** 2 for y in data_y) / (len(data_y) - 1)
-    manual_std_y = manual_var_y ** 0.5
-    manual_corr = manual_cov / (manual_std * manual_std_y)
-
-    # --- Numpy Calculations ---
-    np_mean = np.mean(data_x)
-    np_median = np.median(data_x)
-    # Numpy Mode (Custom using unique)
-    vals, counts = np.unique(data_x, return_counts=True)
-    np_mode = vals[np.argmax(counts)]
-    
-    np_var = np.var(data_x, ddof=1) # Sample variance
-    np_std = np.std(data_x, ddof=1) # Sample std dev
-    np_cov = np.cov(data_x, data_y)[0][1] # Covariance matrix
-    
-    # Range
-    np_range = np.ptp(data_x)
-    # Percentiles
-    np_p25 = np.percentile(data_x, 25)
-    np_p75 = np.percentile(data_x, 75)
-    np_iqr = np_p75 - np_p25
-    # Correlation
-    np_corr = np.corrcoef(data_x, data_y)[0][1]
-    
-    # --- Scipy Calculations ---
-    # Scipy Calculations
-    # Mean (tmean)
-    scipy_mean = stats.tmean(data_x)
-    # Median (scoreatpercentile)
-    scipy_median = stats.scoreatpercentile(data_x, 50)
-    # Mode
-    scipy_mode_result = stats.mode(data_x, keepdims=True)
-    scipy_mode = scipy_mode_result.mode[0]
-    # Variance & Std Dev
-    scipy_var = stats.tvar(data_x)
-    scipy_std = stats.tstd(data_x)
-    # Covariance (Derived from Pearson Correlation)
-    # cov(x,y) = pearsonr(x,y) * std(x) * std(y)
-    r_val, _ = stats.pearsonr(data_x, data_y)
-    scipy_cov = r_val * stats.tstd(data_x) * stats.tstd(data_y)
-    
-    # IQR
-    scipy_iqr = stats.iqr(data_x)
-    # Percentiles
-    scipy_p25 = stats.scoreatpercentile(data_x, 25)
-    scipy_p75 = stats.scoreatpercentile(data_x, 75)
-    # Correlation
-    scipy_pearson, _ = stats.pearsonr(data_x, data_y)
-    scipy_spearman, _ = stats.spearmanr(data_x, data_y)
-    
-    # --- Pandas Calculations ---
-    df = pd.DataFrame({'x': data_x, 'y': data_y})
-    pd_mean = df['x'].mean()
-    pd_median = df['x'].median()
-    pd_mode = df['x'].mode()[0]
-    pd_var = df['x'].var()
-    pd_std = df['x'].std()
-    pd_cov = df['x'].cov(df['y'])
-    
-    # Range
-    pd_range = df['x'].max() - df['x'].min()
-    # Percentiles
-    pd_p25 = df['x'].quantile(0.25)
-    pd_p75 = df['x'].quantile(0.75)
-    pd_iqr = pd_p75 - pd_p25
-    # Correlation
-    pd_pearson = df['x'].corr(df['y'], method='pearson')
-    pd_spearman = df['x'].corr(df['y'], method='spearman')
-
-    return render_template('statistics.html', 
-                           dataset_x=data_x,
-                           dataset_y=data_y,
-                           stats={
-                               'manual': {
-                                   'var': manual_var,
-                                   'std': manual_std,
-                                   'cov': manual_cov,
-                                   'range': manual_range,
-                                   'iqr': manual_iqr,
-                                   'corr': manual_corr
-                               },
-                               'numpy': {
-                                   'mean': np_mean, 
-                                   'median': np_median,
-                                   'mode': np_mode,
-                                   'var': np_var,
-                                   'std': np_std,
-                                   'cov': np_cov,
-                                   'range': np_range,
-                                   'iqr': np_iqr,
-                                   'p25': np_p25,
-                                   'p75': np_p75,
-                                   'corr': np_corr
-                               },
-                               'scipy': {
-                                   'mean': scipy_mean,
-                                   'median': scipy_median,
-                                   'mode': scipy_mode,
-                                   'var': scipy_var,
-                                   'std': scipy_std,
-                                   'cov': scipy_cov,
-                                   'iqr': scipy_iqr,
-                                   'p25': scipy_p25,
-                                   'p75': scipy_p75,
-                                   'pearson': scipy_pearson,
-                                   'spearman': scipy_spearman
-                               },
-                               'pandas': {
-                                   'mean': pd_mean, 
-                                   'median': pd_median, 
-                                   'mode': pd_mode,
-                                   'var': pd_var,
-                                   'std': pd_std,
-                                   'cov': pd_cov,
-                                   'range': pd_range,
-                                   'iqr': pd_iqr,
-                                   'p25': pd_p25,
-                                   'p75': pd_p75,
-                                   'pearson': pd_pearson,
-                                   'spearman': pd_spearman
-                               }
-                           })
+    res = calc.statistics_results()
+    return render_template('statistics.html', **res)
 @main.route('/probability-distributions')
 def probability_distributions():
-    # --- 1. Discrete ---
-    # Bernoulli (p=0.6)
-    bernoulli_val = stats.bernoulli.pmf(1, p=0.6)
-    
-    # Binomial (n=10, p=0.5, k=5)
-    binom_val = stats.binom.pmf(5, n=10, p=0.5)
-    
-    # Geometric (p=0.2, k=3)
-    geom_val = stats.geom.pmf(3, p=0.2)
-    
-    # Poisson (mu=3, k=5)
-    poisson_val = stats.poisson.pmf(5, mu=3)
-    
-    discrete_data = {
-        'bernoulli': round(bernoulli_val, 4),
-        'binomial': round(binom_val, 4),
-        'geometric': round(geom_val, 4),
-        'poisson': round(poisson_val, 4)
-    }
-
-    # --- 2. Continuous ---
-    # Uniform (0, 10, x=5)
-    uniform_val = stats.uniform.pdf(5, loc=0, scale=10)
-    
-    # Normal (0, 1, x=0)
-    normal_val = stats.norm.pdf(0, loc=0, scale=1)
-    
-    # Exponential (scale=2, x=2). note: scale=1/lambda. if lambda=0.5, scale=2.
-    expon_val = stats.expon.pdf(2, scale=2)
-    
-    # Gamma (a=2, scale=2, x=3)
-    gamma_val = stats.gamma.pdf(3, a=2, scale=2)
-    
-    # Beta (a=2, b=2, x=0.5)
-    beta_val = stats.beta.pdf(0.5, a=2, b=2)
-    
-    # Chi-square (df=2, x=1)
-    chisquare_val = stats.chi2.pdf(1, df=2)
-    
-    continuous_data = {
-        'uniform': round(uniform_val, 4),
-        'normal': round(normal_val, 4),
-        'exponential': round(expon_val, 4),
-        'gamma': round(gamma_val, 4),
-        'beta': round(beta_val, 4),
-        'chisquare': round(chisquare_val, 4)
-    }
-
-    return render_template('probability_distributions.html',
-                           discrete=discrete_data,
-                           continuous=continuous_data)
+    res = calc.probability_distributions_results()
+    return render_template('probability_distributions.html', **res)
 
 @main.route('/contribute')
 def contribute():
@@ -415,294 +140,37 @@ def contribute():
 
 @main.route('/statistical-inference')
 def statistical_inference():
-    # --- 1. Sampling Methods ---
-    # Population of 1000 items
-    population = np.arange(1000)
-    # Simple Random Sampling (n=50)
-    simple_sample = np.random.choice(population, size=50, replace=False)
-    simple_sample_mean = np.mean(simple_sample)
-    
-    # --- 2. Law of Large Numbers (LLN) ---
-    # Simulate coin flips (0=Tails, 1=Heads). True mean = 0.5
-    # Small N
-    small_n = 10
-    small_flips = np.random.binomial(n=1, p=0.5, size=small_n)
-    small_mean = np.mean(small_flips)
-    # Large N
-    large_n = 10000
-    large_flips = np.random.binomial(n=1, p=0.5, size=large_n)
-    large_mean = np.mean(large_flips)
-    
-    # --- 3. Central Limit Theorem (CLT) ---
-    # Population: Uniform [0, 100]. Mean = 50.
-    # Take 1000 samples of size 30, calc means.
-    sample_means = [np.mean(np.random.uniform(0, 100, 30)) for _ in range(1000)]
-    clt_mean = np.mean(sample_means)
-    clt_std = np.std(sample_means) # Should be close to (100-0)/sqrt(12) / sqrt(30) ≈ 28.8 / 5.47 ≈ 5.26
-    
-    # --- 4. Estimators ---
-    # Bias & Variance Demonstration is theoretical in text, but let's show MLE fit.
-    # Data from Normal(5, 2)
-    sample_data = np.random.normal(loc=5, scale=2, size=100)
-    # MLE estimation of parameters
-    mu_mle, std_mle = stats.norm.fit(sample_data)
-    
-    # --- 5. Confidence Intervals ---
-    # 95% CI for the mean of sample_data
-    # stats.sem = standard error of mean = std / sqrt(n)
-    ci_low, ci_high = stats.norm.interval(0.95, loc=np.mean(sample_data), scale=stats.sem(sample_data))
-    
-    # --- 6. Hypothesis Testing ---
-    # A. One-sample t-test
-    # H0: Mean = 5.0 vs H1: Mean != 5.0
-    t_stat, t_p_val = stats.ttest_1samp(sample_data, 5.0)
-    
-    # B. Chi-square Goodness of Fit
-    # Observed counts of rolling a die 60 times
-    observed = np.array([12, 8, 11, 9, 13, 7])
-    # Expected counts (fair die) = 10 each
-    expected = np.array([10, 10, 10, 10, 10, 10])
-    chi2_stat, chi2_p_val = stats.chisquare(f_obs=observed, f_exp=expected)
-    
-    results = {
-        'sampling': {'mean': round(simple_sample_mean, 2)},
-        'lln': {'small_mean': small_mean, 'large_mean': round(large_mean, 4)},
-        'clt': {'mean': round(clt_mean, 2), 'std': round(clt_std, 2)},
-        'estimators': {'mu_mle': round(mu_mle, 2), 'std_mle': round(std_mle, 2)},
-        'ci': {'low': round(ci_low, 2), 'high': round(ci_high, 2)},
-        'tests': {
-            't_stat': round(t_stat, 2), 
-            't_p': round(t_p_val, 4),
-            'chi2_stat': round(chi2_stat, 2),
-            'chi2_p': round(chi2_p_val, 4)
-        }
-    }
-    
+    results = calc.statistical_inference_results()
     return render_template('statistical_inference.html', res=results)
 
 
 @main.route('/regression')
 def regression_page():
-    results = {}
-    
-    # 1. Linear Regression
-    X = np.array([[1], [2], [3], [4], [5]])
-    y = np.array([2.1, 3.9, 6.1, 8.2, 10.1])
-    model = LinearRegression()
-    model.fit(X, y)
-    results['linear'] = {
-        'intercept': round(model.intercept_, 2),
-        'slope': round(model.coef_[0], 2)
-    }
-    
-    # 2. Logistic Regression
-    X_log = np.array([[1], [2], [10], [11]])
-    y_log = np.array([0, 0, 1, 1])
-    clf = LogisticRegression()
-    clf.fit(X_log, y_log)
-    # Predict probability for X=5
-    prob = clf.predict_proba([[5]])[0][1]
-    results['logistic'] = {
-        'prob': round(prob, 4)
-    }
-    
-    # 3. Regularization (Ridge)
-    np.random.seed(42)
-    X_rng = np.random.rand(10, 1)
-    y_rng = 2 * X_rng + 0.5 + np.random.randn(10, 1) * 0.5 
-    ridge = Ridge(alpha=1.0)
-    ridge.fit(X_rng, y_rng)
-    results['regularization'] = {
-        'coef': round(ridge.coef_[0][0], 4)
-    }
-    
+    results = calc.regression_results()
     return render_template('regression.html', res=results)
 
 
 @main.route('/bayesian-statistics')
 def bayesian_statistics():
-    results = {}
-    
-    # 1. Bayes Theorem Calculation
-    prior = 0.01
-    likelihood = 0.99
-    evidence = (0.99 * 0.01) + (0.05 * 0.99)
-    posterior = (likelihood * prior) / evidence
-    results['bayes'] = {
-        'posterior': round(posterior, 4)
-    }
-    
-    # 2. Naive Bayes
-    X = np.array([
-        [100, 20], [110, 22], [120, 25], # Children
-        [160, 60], [170, 70], [180, 80]  # Adults
-    ])
-    y = np.array([0, 0, 0, 1, 1, 1])
-
-    clf = GaussianNB()
-    clf.fit(X, y)
-    prediction = clf.predict([[165, 65]])[0]
-    results['naive_bayes'] = {
-        'prediction': "Adult" if prediction == 1 else "Child"
-    }
-    
+    results = calc.bayesian_results()
     return render_template('bayesian_statistics.html', res=results)
 
 
 @main.route('/multivariate-statistics')
 def multivariate_statistics():
-    results = {}
-    
-    # Data: Height (cm) vs Weight (kg)
-    data = np.array([
-        [170, 65],
-        [180, 80],
-        [160, 55],
-        [175, 70],
-        [165, 60]
-    ])
-    
-    # 1. Covariance
-    cov_matrix = np.cov(data, rowvar=False)
-    results['covariance'] = {
-        'var_height': round(cov_matrix[0, 0], 2),
-        'var_weight': round(cov_matrix[1, 1], 2),
-        'cov': round(cov_matrix[0, 1], 2)
-    }
-    
-    # 2. Eigenvalues
-    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
-    # Sort by eigenvalue
-    idx = eigenvalues.argsort()[::-1]
-    eigenvalues = eigenvalues[idx]
-    eigenvectors = eigenvectors[:, idx]
-    
-    results['eigen'] = {
-        'val1': round(eigenvalues[0], 2),
-        'vec1': [round(x, 2) for x in eigenvectors[:, 0]]
-    }
-    
-    # 3. PCA
-    pca = PCA(n_components=1)
-    pca.fit(data)
-    results['pca'] = {
-        'explained_var': round(pca.explained_variance_ratio_[0], 4)
-    }
-    
-    # 4. SVD
-    U, S, Vt = np.linalg.svd(data, full_matrices=False)
-    results['svd'] = {
-        'singular_values': [round(x, 2) for x in S]
-    }
-
-    # 5. Multivariate Normal PDF
-    # Mean vector and Covariance matrix
-    mean_vec = np.array([0, 0])
-    cov_mat = np.array([[1, 0.5], [0.5, 1]])
-    # Point to evaluate
-    x_pt = np.array([1, 1])
-    pdf_val = stats.multivariate_normal.pdf(x_pt, mean=mean_vec, cov=cov_mat)
-    results['multivariate_normal'] = {
-        'pdf': round(pdf_val, 4)
-    }
-    
+    results = calc.multivariate_results()
     return render_template('multivariate_statistics.html', res=results)
 
 
 @main.route('/statistical-learning')
 def statistical_learning():
-    results = {}
-    
-    # 1. Cross-Validation
-    np.random.seed(42)
-    X = np.random.rand(50, 1)
-    y = 2 * X.squeeze() + 1 + np.random.randn(50) * 0.2
-    model = LinearRegression()
-    scores = cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')
-    results['cv'] = {
-        'mse': round(-1 * np.mean(scores), 4)
-    }
-    
-    # 2. Bootstrapping
-    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    means = []
-    # 500 samples for speed
-    for i in range(500):
-        boot = resample(data, replace=True, n_samples=len(data))
-        means.append(np.mean(boot))
-    results['bootstrap'] = {
-        'lower': round(np.percentile(means, 2.5), 2),
-        'upper': round(np.percentile(means, 97.5), 2)
-    }
-    
-    # 3. Gradient Descent Step
-    current_w = 4.0
-    learning_rate = 0.1
-    gradient = 2 * current_w # Derivative of w^2 is 2w
-    next_w = current_w - (learning_rate * gradient)
-    results['gradient'] = {
-        'new_w': round(next_w, 2)
-    }
-    
-    # 4. AIC Calculation
-    # We need to fit the model first to get residuals
-    model.fit(X, y)
-    preds = model.predict(X)
-    sse = np.sum((y - preds)**2)
-    n = 50
-    k = 2
-    # Log-Likelihood for Gaussian
-    log_likelihood = -n/2 * (1 + np.log(2 * np.pi) + np.log(sse/n))
-    aic = 2*k - 2*log_likelihood
-    results['aic'] = {
-        'score': round(aic, 2)
-    }
-    
+    results = calc.statistical_learning_results()
     return render_template('statistical_learning.html', res=results)
 
 
 @main.route('/experimental-design')
 def experimental_design():
-    results = {}
-    
-    # 1. Stratified Split Example
-    y = np.array([0]*90 + [1]*10)
-    X = np.random.rand(100, 2)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-    # Count class 1 in test set
-    class1_count = np.sum(y_test)
-    results['split'] = {
-        'class1_count': int(class1_count)
-    }
-    
-    # 2. Classification Metrics
-    y_true = [0, 0, 1, 1, 1, 0, 1, 0, 1, 1]
-    y_pred = [0, 1, 1, 1, 0, 0, 1, 0, 1, 1]
-    
-    results['class_metrics'] = {
-        'acc': round(accuracy_score(y_true, y_pred), 2),
-        'f1': round(f1_score(y_true, y_pred), 2),
-        'auc': round(roc_auc_score(y_true, y_pred), 2),
-        'cm': confusion_matrix(y_true, y_pred).tolist()
-    }
-    
-    # 3. Regression Metrics
-    y_true_reg = [100, 150, 200, 250]
-    y_pred_reg = [110, 140, 205, 260] # Errors: 10, -10, 5, 10
-    
-    # Manual RMSE Calculation
-    errors = np.array(y_true_reg) - np.array(y_pred_reg)
-    squared_errors = errors ** 2
-    mean_sq_error = np.mean(squared_errors)
-    manual_rmse = np.sqrt(mean_sq_error)
-    
-    results['reg_metrics'] = {
-        'mae': round(mean_absolute_error(y_true_reg, y_pred_reg), 2),
-        'rmse': round(np.sqrt(mean_squared_error(y_true_reg, y_pred_reg)), 2),
-        'mape': round(mean_absolute_percentage_error(y_true_reg, y_pred_reg) * 100, 2),
-        'manual_rmse': round(manual_rmse, 2)
-    }
-
+    results = calc.experimental_results()
     return render_template('experimental_design.html', res=results)
 
 
